@@ -50,9 +50,10 @@ This project provides a shared set of services and a common Docker network that 
 
 ### Included Services
 
-   | Service      | Description                      | URL/Port                                             |
-   |--------------|----------------------------------|------------------------------------------------------|
-   | **RabbitMq** | A shared RabbitMQ message broker | Accessible via `rabbitmq:5672` on the shared network |
+   | Service           | Shared network URL                     |
+   |-------------------|----------------------------------------|
+   | **RabbitMq**      | common-resources-rabbitmq-1:5672       |
+   | **Elasticsearch** | common-resources-elasticsearch-1:9200  |
 
 
 ### Notes
