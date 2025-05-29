@@ -50,10 +50,10 @@ This project provides a shared set of services and a common Docker network that 
 
 ### Included Services
 
-   | Service           | Shared network URL                     |
-   |-------------------|----------------------------------------|
-   | **RabbitMq**      | common-resources-rabbitmq-1:5672       |
-   | **Elasticsearch** | common-resources-elasticsearch-1:9200  |
+   | Service           | Shared network URL                     | GUI                                        |
+   |-------------------|----------------------------------------|--------------------------------------------|
+   | **RabbitMq**      | common-resources-rabbitmq-1:5672       | http://localhost:15672                     |
+   | **Elasticsearch** | common-resources-elasticsearch-1:9200  | https://elasticvue.com/                    |
 
 
 ### Notes
