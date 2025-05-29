@@ -18,8 +18,8 @@ This project provides a shared set of services and a common Docker network that 
 
 1. #### Clone this repository
    ```bash
-   git clone git@ssh-gitlab.emoti.dev:emoti/gifts/common-resources-network.git
-   cd common-resources-network
+   git clone git@ssh-gitlab.emoti.dev:emoti/gifts/common-resources.git
+   cd common-resources
    cp .env.example .env
    ```
 2. #### Start the shared services:
@@ -50,9 +50,10 @@ This project provides a shared set of services and a common Docker network that 
 
 ### Included Services
 
-   | Service      | Description                      | URL/Port                                             |
-   |--------------|----------------------------------|------------------------------------------------------|
-   | **RabbitMq** | A shared RabbitMQ message broker | Accessible via `rabbitmq:5672` on the shared network |
+   | Service           | Shared network URL                     |
+   |-------------------|----------------------------------------|
+   | **RabbitMq**      | common-resources-rabbitmq-1:5672       |
+   | **Elasticsearch** | common-resources-elasticsearch-1:9200  |
 
 
 ### Notes
