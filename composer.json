@@ -1,0 +1,25 @@
+{
+  "name": "emoti/common-resources",
+  "description": "This package contains classes that are used by multiple microservices, as well as things for local communication between them.",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Emoti\\CommonResources\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^8.1",
+    "ramsey/uuid": "^4.7",
+    "php-amqplib/php-amqplib": "^3.7"
+  },
+  "require-dev": {
+    "laravel/framework": "^12.0"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Emoti\\CommonResources\\CommonResourcesServiceProvider"
+      ]
+    }
+  }
+}
