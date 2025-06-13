@@ -34,14 +34,14 @@ trait ArrayableTrait
      * Creates a new instance of the class from an array of data.
      * @throws ReflectionException
      */
-    public static function fromArray(array $data): static
+    public static function fromArray(array $messageContent): static
     {
         $reflection = new ReflectionClass(static::class);
         $instance = $reflection->newInstanceWithoutConstructor();
 
         foreach ($reflection->getProperties() as $property) {
             $name = $property->getName();
-            $value = $data[$name] ?? $data['data'][$name] ?? null;
+            $value = $messageContent[$name] ?? $messageContent['data'][$name] ?? null;
             $type = $property->getType();
 
             if ($value !== null && $type && !$type->isBuiltin()) {
