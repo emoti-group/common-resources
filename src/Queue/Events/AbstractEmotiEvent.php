@@ -8,4 +8,5 @@ abstract class AbstractEmotiEvent
 {
     use BasicTrait;
     use DispatchableTrait;
+    use ArrayableTrait;
 }

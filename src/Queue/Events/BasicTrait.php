@@ -31,17 +31,4 @@ trait BasicTrait
     {
         return Uuid::uuid7();
     }
-
-    public function toArray(): array
-    {
-        return [
-            'site' => $this->site()->value,
-            'routing_key' => $this->routingKey(),
-            'event_id' => $this->eventId()->toString(),
-            'resource_id' => $this->resourceId(),
-            'resource_uuid' => $this->resourceUuid()?->toString(),
-            'data' => $this->data(),
-            'version' => $this->version(),
-        ];
-    }
 }

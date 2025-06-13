@@ -34,20 +34,4 @@ final class ProductAddedToUpsellGroup extends AbstractEmotiEvent implements Emot
     {
         return null;
     }
-
-    public function data(): array
-    {
-        return [
-            'productId' => $this->productId,
-            'upsellGroupId' => $this->upsellGroupId,
-        ];
-    }
-
-    public static function fromArray(array $data): static
-    {
-        return new self(
-            productId: $data['productId'],
-            upsellGroupId: $data['upsellGroupId'],
-        );
-    }
 }
