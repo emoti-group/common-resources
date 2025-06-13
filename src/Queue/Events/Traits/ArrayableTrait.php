@@ -29,15 +29,30 @@ trait ArrayableTrait
     public static function fromArray(array $data): static
     {
         $reflection = new ReflectionClass(static::class);
-        $constructor = $reflection->getConstructor();
-        $params = [];
+        $instance = $reflection->newInstanceWithoutConstructor();
 
-        foreach ($constructor->getParameters() as $param) {
-            $name = $param->getName();
-            $params[] = $data[$name] ?? null;
+        foreach ($reflection->getProperties() as $property) {
+            $name = $property->getName();
+            $value = $data[$name] ?? $data['data'][$name] ?? null;
+            $type = $property->getType();
+
+            if ($value !== null && $type && !$type->isBuiltin()) {
+                $typeName = $type->getName();
+                if (enum_exists($typeName)) {
+                    $value = $typeName::from($value);
+                } elseif (class_exists($typeName) && method_exists($typeName, 'fromArray')) {
+                    $value = $typeName::fromArray($value);
+                } elseif (class_exists($typeName) && method_exists($typeName, 'from')) {
+                    $value = $typeName::from($value);
+                }
+            }
+
+            if ($value !== null) {
+                $property->setValue($instance, $value);
+            }
         }
 
-        return $reflection->newInstanceArgs($params);
+        return $instance;
     }
 
     public function toArray(): array
