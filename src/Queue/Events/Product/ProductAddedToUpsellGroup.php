@@ -11,8 +11,8 @@ use Ramsey\Uuid\UuidInterface;
 final class ProductAddedToUpsellGroup extends AbstractEmotiEvent implements EmotiEventInterface
 {
     public function __construct(
-        private readonly int $productId,
-        private readonly int $upsellGroupId,
+        public readonly int $productId,
+        public readonly int $upsellGroupId,
     ) {}
 
     public static function routingName(): string

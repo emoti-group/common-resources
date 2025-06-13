@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Emoti\CommonResources\Queue\Events\Traits;
 
 use ReflectionClass;
-use ReflectionProperty;
 
 trait ArrayableTrait
 {
@@ -13,9 +12,11 @@ trait ArrayableTrait
     {
         $reflection = new ReflectionClass($this);
         $data = [];
-        foreach ($reflection->getProperties(ReflectionProperty::IS_PRIVATE) as $property) {
+
+        foreach ($reflection->getProperties() as $property) {
             $data[$property->getName()] = $property->getValue($this);
         }
+
         return $data;
     }
 
@@ -24,10 +25,12 @@ trait ArrayableTrait
         $reflection = new ReflectionClass(static::class);
         $constructor = $reflection->getConstructor();
         $params = [];
+
         foreach ($constructor->getParameters() as $param) {
             $name = $param->getName();
             $params[] = $data[$name] ?? null;
         }
+        
         return $reflection->newInstanceArgs($params);
     }
 
