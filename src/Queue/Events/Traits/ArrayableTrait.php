@@ -70,12 +70,12 @@ trait ArrayableTrait
     {
         return [
             'site' => $this->site()->value,
-            'routingKey' => $this->routingKey(),
-            'eventId' => $this->eventId()->toString(),
+            'data' => $this->data(),
             'resourceId' => $this->resourceId(),
             'resourceUuid' => $this->resourceUuid()?->toString(),
-            'data' => $this->data(),
             'version' => $this->version(),
+            'eventId' => $this->eventId()->toString(),
+            'routingKey' => $this->routingKey(),
         ];
     }
 }
