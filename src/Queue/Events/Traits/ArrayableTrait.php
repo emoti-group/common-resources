@@ -8,6 +8,9 @@ use ReflectionClass;
 
 trait ArrayableTrait
 {
+    /**
+     * Returns an array of all object properties.
+     */
     public function data(): array
     {
         $reflection = new ReflectionClass($this);
@@ -20,6 +23,9 @@ trait ArrayableTrait
         return $data;
     }
 
+    /**
+     * Creates a new instance of the class from an array of data.
+     */
     public static function fromArray(array $data): static
     {
         $reflection = new ReflectionClass(static::class);
@@ -30,7 +36,7 @@ trait ArrayableTrait
             $name = $param->getName();
             $params[] = $data[$name] ?? null;
         }
-        
+
         return $reflection->newInstanceArgs($params);
     }
 
