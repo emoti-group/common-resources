@@ -7,20 +7,24 @@ namespace Emoti\CommonResources\Queue\Events\Traits;
 use BackedEnum;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
-use ReflectionProperty;
+use ReflectionException;
 
 trait ArrayableTrait
 {
     /**
-     * Returns an array of all object properties.
+     * Returns an array of all object constructor properties.
      */
     public function data(): array
     {
         $reflection = new ReflectionClass($this);
         $data = [];
 
-        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            $data[$property->getName()] = $property->getValue($this);
+        foreach ($reflection->getConstructor()->getParameters() as $param) {
+            $name = $param->getName();
+            if ($reflection->hasProperty($name)) {
+                $property = $reflection->getProperty($name);
+                $data[$name] = $property->getValue($this);
+            }
         }
 
         return $data;
@@ -28,6 +32,7 @@ trait ArrayableTrait
 
     /**
      * Creates a new instance of the class from an array of data.
+     * @throws ReflectionException
      */
     public static function fromArray(array $data): static
     {
