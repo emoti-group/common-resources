@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Events\Traits;
 
+use BackedEnum;
+use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 
 trait ArrayableTrait
@@ -39,11 +41,14 @@ trait ArrayableTrait
             if ($value !== null && $type && !$type->isBuiltin()) {
                 $typeName = $type->getName();
                 if (enum_exists($typeName)) {
+                    /** @var BackedEnum $typeName */
                     $value = $typeName::from($value);
                 } elseif (class_exists($typeName) && method_exists($typeName, 'fromArray')) {
                     $value = $typeName::fromArray($value);
                 } elseif (class_exists($typeName) && method_exists($typeName, 'from')) {
                     $value = $typeName::from($value);
+                } elseif (str_contains($typeName, 'UuidInterface')) {
+                    $value = Uuid::fromString($value);
                 }
             }
 
