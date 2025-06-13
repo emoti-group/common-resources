@@ -6,7 +6,7 @@ namespace Emoti\CommonResources\Queue\Events;
 
 abstract class AbstractEmotiEvent
 {
-    use BasicTrait;
+    use DefaultMethodsTrait;
     use DispatchableTrait;
     use ArrayableTrait;
 }

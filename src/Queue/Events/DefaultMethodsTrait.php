@@ -8,7 +8,7 @@ use Emoti\CommonResources\Enums\Site;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-trait BasicTrait
+trait DefaultMethodsTrait
 {
     protected Site $site;
 
