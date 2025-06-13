@@ -7,6 +7,7 @@ namespace Emoti\CommonResources\Queue\Events\Traits;
 use BackedEnum;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
+use ReflectionProperty;
 
 trait ArrayableTrait
 {
@@ -18,7 +19,7 @@ trait ArrayableTrait
         $reflection = new ReflectionClass($this);
         $data = [];
 
-        foreach ($reflection->getProperties() as $property) {
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             $data[$property->getName()] = $property->getValue($this);
         }
 
@@ -64,10 +65,10 @@ trait ArrayableTrait
     {
         return [
             'site' => $this->site()->value,
-            'routing_key' => $this->routingKey(),
-            'event_id' => $this->eventId()->toString(),
-            'resource_id' => $this->resourceId(),
-            'resource_uuid' => $this->resourceUuid()?->toString(),
+            'routingKey' => $this->routingKey(),
+            'eventId' => $this->eventId()->toString(),
+            'resourceId' => $this->resourceId(),
+            'resourceUuid' => $this->resourceUuid()?->toString(),
             'data' => $this->data(),
             'version' => $this->version(),
         ];
