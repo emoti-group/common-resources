@@ -79,11 +79,17 @@ trait ArrayableTrait
             if (enum_exists($typeName)) {
                 /** @var BackedEnum $typeName */
                 return $typeName::from($value);
-            } elseif (class_exists($typeName) && method_exists($typeName, 'fromArray')) {
+            }
+
+            if (class_exists($typeName) && method_exists($typeName, 'fromArray')) {
                 return $typeName::fromArray($value);
-            } elseif (class_exists($typeName) && method_exists($typeName, 'from')) {
+            }
+
+            if (class_exists($typeName) && method_exists($typeName, 'from')) {
                 return $typeName::from($value);
-            } elseif (str_contains($typeName, 'UuidInterface')) {
+            }
+
+            if (str_contains($typeName, 'UuidInterface')) {
                 return Uuid::fromString($value);
             }
         }
