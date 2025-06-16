@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue;
 
+use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
+
 /**
- * @property class-string $handler
+ * @property class-string $class
  */
+#[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 final class Message
 {
     public function __construct(

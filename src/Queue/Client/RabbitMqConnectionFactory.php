@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Client;
 
+use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Emoti\CommonResources\Support\Config\Config;
 use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Connection\AMQPConnectionConfig;
 use PhpAmqpLib\Connection\AMQPConnectionFactory;
 
+#[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 final class RabbitMqConnectionFactory
 {
     private static ?AbstractConnection $connection = null;
