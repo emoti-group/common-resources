@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Support\Config;
 
+use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use RuntimeException;
 
+#[NamespaceVisibility(namespace: 'Emoti\CommonResources\Support\Config')]
 final class VanillaPHPConfig implements ConfigInterface
 {
     public static function get(string $key, mixed $default = null): mixed
@@ -18,7 +20,7 @@ final class VanillaPHPConfig implements ConfigInterface
             if (!is_file($configPath)) {
                 return $default;
             }
-            
+
             $config = require $configPath;
         }
 

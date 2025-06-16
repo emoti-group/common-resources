@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Events\Traits;
 
+use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Emoti\CommonResources\Enums\Site;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
+#[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 trait ExtraPropertiesTrait
 {
     protected Site $site;

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Support\Storage;
 
+use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
+
+#[NamespaceVisibility(namespace: 'Emoti\CommonResources\Support\Storage')]
 final class StorageFactory
 {
     public static function make(): StorageInterface

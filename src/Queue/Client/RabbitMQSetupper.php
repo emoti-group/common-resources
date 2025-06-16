@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Client;
 
+use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Emoti\CommonResources\Support\Config\Config;
 use Emoti\CommonResources\Support\Storage\Storage;
 use Exception;
 
+#[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 final class RabbitMQSetupper
 {
     public function __construct(private readonly RabbitMQClient $client) {}

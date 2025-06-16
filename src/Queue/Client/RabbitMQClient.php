@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Client;
 
+use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Emoti\CommonResources\Support\Config\Config;
 use Emoti\CommonResources\Support\SingletonTrait;
 use Exception;
@@ -11,6 +12,7 @@ use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Wire\AMQPTable;
 
+#[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 final class RabbitMQClient
 {
     use SingletonTrait;

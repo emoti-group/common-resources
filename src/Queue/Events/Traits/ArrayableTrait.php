@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Emoti\CommonResources\Queue\Events\Traits;
 
 use BackedEnum;
+use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
 use ReflectionProperty;
 use ReflectionType;
 
+#[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 trait ArrayableTrait
 {
     /**

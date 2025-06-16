@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Publisher;
 
+use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Emoti\CommonResources\Queue\Client\RabbitMQClient;
 use Emoti\CommonResources\Queue\Message;
 use PhpAmqpLib\Message\AMQPMessage;
 
+#[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 final class RabbitMQPublisher implements PublisherInterface
 {
     private readonly RabbitMQClient $client;
