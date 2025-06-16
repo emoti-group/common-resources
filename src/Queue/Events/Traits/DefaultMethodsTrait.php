@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Emoti\CommonResources\Queue\Events;
+namespace Emoti\CommonResources\Queue\Events\Traits;
 
 use Emoti\CommonResources\Enums\Site;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-trait BasicTrait
+trait DefaultMethodsTrait
 {
     protected Site $site;
 
@@ -30,18 +30,5 @@ trait BasicTrait
     public function eventId(): UuidInterface
     {
         return Uuid::uuid7();
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'site' => $this->site()->value,
-            'routing_key' => $this->routingKey(),
-            'event_id' => $this->eventId()->toString(),
-            'resource_id' => $this->resourceId(),
-            'resource_uuid' => $this->resourceUuid()?->toString(),
-            'data' => $this->data(),
-            'version' => $this->version(),
-        ];
     }
 }

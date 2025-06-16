@@ -11,8 +11,8 @@ use Ramsey\Uuid\UuidInterface;
 final class ProductRemovedFromUpsellGroup extends AbstractEmotiEvent implements EmotiEventInterface
 {
     public function __construct(
-        private readonly int $productId,
-        private readonly int $upsellGroupId,
+        public readonly int $productId,
+        public readonly int $upsellGroupId,
     ) {}
 
     public static function routingName(): string
@@ -33,21 +33,5 @@ final class ProductRemovedFromUpsellGroup extends AbstractEmotiEvent implements 
     public function resourceUuid(): ?UuidInterface
     {
         return null;
-    }
-
-    public function data(): array
-    {
-        return [
-            'productId' => $this->productId,
-            'upsellGroupId' => $this->upsellGroupId,
-        ];
-    }
-
-    public static function fromArray(array $data): static
-    {
-        return new self(
-            productId: $data['productId'],
-            upsellGroupId: $data['upsellGroupId'],
-        );
     }
 }

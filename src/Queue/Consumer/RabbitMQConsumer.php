@@ -7,6 +7,8 @@ namespace Emoti\CommonResources\Queue\Consumer;
 use Closure;
 use Emoti\CommonResources\Queue\Client\RabbitMQClient;
 use Emoti\CommonResources\Queue\Client\RabbitMQSetupper;
+use Emoti\CommonResources\Queue\EmotiListenerInterface;
+use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
 use Emoti\CommonResources\Queue\Message;
 use Emoti\CommonResources\Support\Config\Config;
 use Exception;
@@ -75,10 +77,12 @@ final class RabbitMQConsumer implements ConsumerInterface
     {
         $message = Message::fromJson($AMQPMessage->getBody());
 
+        /** @var EmotiEventInterface $event */
         $event = $message->handler::fromArray($message->content['data']);
         $listener = Config::get('bindings')[$event::class] ?? null;
 
         if ($listener) {
+            /** @var EmotiListenerInterface $listenerInstance */
             $listenerInstance = App::getFacadeRoot() ? App::make($listener) : new $listener();
             $listenerInstance->handle($event);
         }

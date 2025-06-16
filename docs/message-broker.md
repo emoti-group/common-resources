@@ -32,17 +32,18 @@ basically more of a job than an event), you should not use this solution, but ra
    
    namespace App\Listeners;
    
+   use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
    use Emoti\CommonResources\Queue\Events\Product\ProductAddedToUpsellGroup;
    
-   final readonly class ProductAddedToUpsellGroupListener
+   final readonly class ProductAddedToUpsellGroupListener implements EmotiEventInterface
    {
        public function handle(ProductAddedToUpsellGroup $event): void
        {
            dump('Event received!');
        }
    }
-
    ```
+
 2. Plug in the listener in _config/common-resources.php_:
    ```php
    'bindings' => [
@@ -90,9 +91,10 @@ $event->dispatch(Site::PL);
    
    namespace App\Listeners;
 
+   use Emoti\CommonResources\Queue\EmotiListenerInterface; use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
    use Emoti\CommonResources\Queue\Events\Product\ProductAddedToUpsellGroup;
    
-   final readonly class ProductAddedToUpsellGroupListener
+   final readonly class ProductAddedToUpsellGroupListener implements EmotiListenerInterface
    {
        public function handle(ProductAddedToUpsellGroup $event): void
        {
@@ -100,6 +102,7 @@ $event->dispatch(Site::PL);
        }
    }
    ```
+
 2. Plug in the listener in _config/common-resources.php_:
    ```php
    'bindings' => [

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Emoti\CommonResources\Queue\Events;
+namespace Emoti\CommonResources\Queue\Events\Traits;
 
 use Emoti\CommonResources\Enums\Site;
 use Emoti\CommonResources\Queue\Message;
