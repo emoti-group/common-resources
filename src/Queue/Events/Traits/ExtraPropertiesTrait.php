@@ -8,9 +8,10 @@ use Emoti\CommonResources\Enums\Site;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-trait DefaultMethodsTrait
+trait ExtraPropertiesTrait
 {
     protected Site $site;
+    protected UuidInterface $eventId;
 
     public static function routingKey(): string
     {
@@ -29,6 +30,11 @@ trait DefaultMethodsTrait
 
     public function eventId(): UuidInterface
     {
-        return Uuid::uuid7();
+        return $this->eventId;
+    }
+
+    public function setEventId(): void
+    {
+        $this->eventId = Uuid::uuid7();
     }
 }

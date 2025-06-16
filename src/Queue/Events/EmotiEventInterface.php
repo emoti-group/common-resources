@@ -9,7 +9,7 @@ use Ramsey\Uuid\UuidInterface;
 
 interface EmotiEventInterface
 {
-    /** Serializable from concrete event **/
+    /** Concrete event class **/
     public static function routingName(): string;
 
     public static function version(): int;
@@ -18,17 +18,16 @@ interface EmotiEventInterface
 
     public function resourceUuid(): ?UuidInterface;
 
-    public function data(): array;
-
-    /** Serializable from abstract event **/
+    /** ExtraPropertiesTrait **/
     public static function routingKey(): string;
 
     public function site(): Site;
 
     public function eventId(): UuidInterface;
 
+    /** ArrayableTrait **/
+    public function data(): array;
 
-    /** Non-serializable **/
     public static function fromArray(array $data): static;
 
     public function toArray(): array;

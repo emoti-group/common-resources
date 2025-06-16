@@ -13,7 +13,9 @@ trait DispatchableTrait
     public function dispatch(Site $site): void
     {
         $publisher = new RabbitMQPublisher();
+
         $this->setSite($site);
+        $this->setEventId();
 
         $publisher->publish(
             new Message($this->toArray(), static::class),

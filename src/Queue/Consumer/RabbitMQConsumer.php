@@ -78,7 +78,7 @@ final class RabbitMQConsumer implements ConsumerInterface
         $message = Message::fromJson($AMQPMessage->getBody());
 
         /** @var EmotiEventInterface $event */
-        $event = $message->handler::fromArray($message->content['data']);
+        $event = $message->class::fromArray($message->content);
         $listener = Config::get('bindings')[$event::class] ?? null;
 
         if ($listener) {

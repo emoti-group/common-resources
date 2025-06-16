@@ -11,14 +11,14 @@ final class Message
 {
     public function __construct(
         public readonly array $content,
-        public readonly string $handler,
+        public readonly string $class,
     ) {}
 
     public function toArray(): array
     {
         return [
             'content' => $this->content,
-            'handler' => $this->handler,
+            'class' => $this->class,
         ];
     }
 
@@ -31,6 +31,6 @@ final class Message
     {
         $body = json_decode($json, true);
 
-        return new self($body['content'], $body['handler']);
+        return new self($body['content'], $body['class']);
     }
 }
