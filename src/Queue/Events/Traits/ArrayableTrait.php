@@ -7,6 +7,8 @@ namespace Emoti\CommonResources\Queue\Events\Traits;
 use BackedEnum;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
+use ReflectionProperty;
+use ReflectionType;
 
 trait ArrayableTrait
 {
@@ -61,15 +63,19 @@ trait ArrayableTrait
         ];
     }
 
-    private static function getPropertyValueFromArray(array $messageContent, string $name)
+    /**
+     * @param array<string, mixed> $messageContent
+     */
+    private static function getPropertyValueFromArray(array $messageContent, string $name): mixed
     {
         return $messageContent[$name] ?? $messageContent['data'][$name] ?? null;
     }
 
-    private static function resolvePropertyValue($value, $type)
+    private static function resolvePropertyValue(mixed $value, ?ReflectionType $type): mixed
     {
-        if ($value !== null && $type && !$type->isBuiltin()) {
+        if ($value !== null && $type !== null && !$type->isBuiltin()) {
             $typeName = $type->getName();
+
             if (enum_exists($typeName)) {
                 /** @var BackedEnum $typeName */
                 return $typeName::from($value);
@@ -85,7 +91,7 @@ trait ArrayableTrait
         return $value;
     }
 
-    private static function setPropertyValue($property, $instance, $value): void
+    private static function setPropertyValue(ReflectionProperty $property, object $instance, mixed $value): void
     {
         if ($value !== null) {
             $property->setValue($instance, $value);
