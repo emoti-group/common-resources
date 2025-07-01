@@ -34,7 +34,9 @@ final class RabbitMqConnectionFactory
         $config->setPassword(Config::get('rabbitmq.password'));
         $config->setKeepalive(true);
 
-        if (Config::get('env') !== 'local') {
+        $rabbitIsRemote = !str_contains(Config::get('rabbitmq.host'), 'common-resources');
+
+        if ($rabbitIsRemote) {
             $config->setIsSecure(true);
             $config->setSslVerify(false);
             $config->setSslVerifyName(false);

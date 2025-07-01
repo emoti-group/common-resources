@@ -21,7 +21,7 @@ return [
         'external_queue' => 'external',
         'host' => env('RABBITMQ_HOST', 'common-resources-rabbitmq-1'),
         'port' => env('RABBITMQ_PORT', 5672),
-        'user' => env('RABBITMQ_USERNAME', 'dev'),
+        'user' => env('RABBITMQ_USER') ?? env('RABBITMQ_USERNAME') ?? 'dev',
         'password' => env('RABBITMQ_PASSWORD', 'dev'),
     ],
 
