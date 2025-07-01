@@ -17,7 +17,7 @@ final class ProductRemovedFromUpsellGroup extends AbstractEmotiEvent implements 
 
     public static function routingName(): string
     {
-        return 'product.added_to_upsell_group';
+        return 'product.removed_from_upsell_group';
     }
 
     public static function version(): int
