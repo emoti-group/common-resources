@@ -33,6 +33,10 @@ final class RabbitMqConnectionFactory
         $config->setUser(Config::get('rabbitmq.user'));
         $config->setPassword(Config::get('rabbitmq.password'));
         $config->setKeepalive(true);
+        $config->setHeartbeat(60);
+        $config->setReadTimeout(120);
+        $config->setWriteTimeout(120);
+        $config->setConnectionTimeout(30);
 
         $rabbitIsRemote = !str_contains(Config::get('rabbitmq.host'), 'common-resources');
 

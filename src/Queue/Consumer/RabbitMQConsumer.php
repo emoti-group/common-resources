@@ -13,8 +13,8 @@ use Emoti\CommonResources\Queue\Message;
 use Emoti\CommonResources\Support\Config\Config;
 use Exception;
 use Illuminate\Support\Facades\App;
-use PhpAmqpLib\Exception\AMQPConnectionClosedException;
 use PhpAmqpLib\Message\AMQPMessage;
+use Throwable;
 
 
 final class RabbitMQConsumer implements ConsumerInterface
@@ -38,15 +38,15 @@ final class RabbitMQConsumer implements ConsumerInterface
      */
     public function consume(Closure $captureException): void
     {
-        // Prepare the consumer
-        [$exchangeName, $queueName] = (new RabbitMQSetupper($this->client))->setup();
-        $this->startQueueConsumer($queueName, $captureException);
-
-        // Consume as long as the channel has callbacks registered
         try {
+            [$exchangeName, $queueName] = (new RabbitMQSetupper($this->client))->setup();
+            $this->startQueueConsumer($queueName, $captureException);
             $this->client->channel->consume();
-        } catch (AMQPConnectionClosedException) {
-            return;
+        } catch (Throwable $e) {
+            $captureException($e);
+            $this->client->channel->close();
+            $this->client->connection->close();
+            exit;
         }
     }
 
