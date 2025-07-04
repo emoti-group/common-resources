@@ -101,8 +101,10 @@ trait ArrayableTrait
 
     private static function setPropertyValue(ReflectionProperty $property, object $instance, mixed $value): void
     {
-        if ($value !== null) {
-            $property->setValue($instance, $value);
+        if ($value === null && in_array($property->getName(), ['eventId', 'site'], true)) {
+            return;
         }
+
+        $property->setValue($instance, $value);
     }
 }
