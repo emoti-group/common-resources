@@ -48,6 +48,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?string $adrenalineLevel,
         public ?string $ageRestriction,
         public array $locations,
+        public ?int $locationRadius,
     ) {}
 
     public static function routingName(): string
