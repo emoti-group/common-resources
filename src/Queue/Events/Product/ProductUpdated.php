@@ -29,7 +29,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?string $upsellDimensionValue,
         public array $titles,
         public array $descriptions,
-        public array $tags = [],
+        public array $tags,
         public ?array $rating,
         public array $pictures,
         public float $priceBeforeDiscount,
