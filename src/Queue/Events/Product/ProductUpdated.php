@@ -50,7 +50,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?string $adrenalineLevel,
         public ?string $ageLevel,
         public array $locations,
-        public ?int $locationRadius,
+        public float $locationRadius,
         public bool $isOnline,
         public bool $isDelivery
     ) {}
