@@ -51,8 +51,8 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?string $ageLevel,
         public array $locations,
         public ?int $locationRadius,
-        public ?bool $isOnline,
-        public ?bool $isDelivery
+        public bool $isOnline,
+        public bool $isDelivery
     ) {}
 
     public static function routingName(): string
