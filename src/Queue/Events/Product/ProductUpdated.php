@@ -11,8 +11,8 @@ use Ramsey\Uuid\UuidInterface;
 /**
  * @var list<array{lang: string, value: string}> $generalCategoryNames
  * @var null|list<array{lang: string, value: string}> $parentGeneralCategoryNames
- * @var null|list<array{lang: string, value: string}> $titles
- * @var null|list<array{lang: string, value: string}> $descriptions
+ * @var list<array{lang: string, value: string}> $titles
+ * @var list<array{lang: string, value: string}> $descriptions
  * @var list<string> $tags
  * @var null|array{average: float, reviewsCount: int, key: string} $rating
  * @var list<string> $pictures
