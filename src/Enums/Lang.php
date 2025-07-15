@@ -11,4 +11,5 @@ enum Lang: string
     case LT = 'lt';
     case LV = 'lv';
     case PL = 'pl';
+    case RU = 'ru';
 }
