@@ -6,7 +6,7 @@ namespace Emoti\CommonResources\Enums;
 
 enum Lang: string
 {
-    case EE = 'ee';
+    case ET = 'et';
     case FI = 'fi';
     case LT = 'lt';
     case LV = 'lv';
