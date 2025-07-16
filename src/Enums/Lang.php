@@ -16,10 +16,7 @@ enum Lang: string
     case RU = 'ru';
 
     /**
-     * Returns an array of languages based on the provided site.
-     *
-     * @param Site $site The site for which to get the languages.
-     * @return array<int, Lang> An array of Lang enums corresponding to the site.
+     * @return non-empty-list<Lang>
      */
     public static function fromSite(Site $site): array
     {
