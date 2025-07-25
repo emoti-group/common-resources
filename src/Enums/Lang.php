@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Enums;
 
-use InvalidArgumentException;
+use Emoti\CommonResources\Traits\ArrayableEnumTrait;
 
 enum Lang: string
 {
+    use ArrayableEnumTrait;
+
     case ET = 'et';
     case FI = 'fi';
     case LT = 'lt';
@@ -22,21 +24,21 @@ enum Lang: string
     {
         return match ($site) {
             Site::PL => [
-                self::PL
+                self::PL,
             ],
             Site::EE => [
                 self::ET,
                 self::RU,
             ],
             Site::LT => [
-                self::LT
+                self::LT,
             ],
             Site::LV => [
                 self::LV,
                 self::RU,
             ],
             Site::FI => [
-                self::FI
+                self::FI,
             ],
         };
     }

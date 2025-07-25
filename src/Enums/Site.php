@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Enums;
 
+use Emoti\CommonResources\Traits\ArrayableEnumTrait;
 use InvalidArgumentException;
 
 enum Site: string
 {
+    use ArrayableEnumTrait;
+
     case PL = 'pl';
     case EE = 'ee';
     case LT = 'lt';
