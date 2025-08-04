@@ -38,14 +38,21 @@ final class RabbitMqConnectionFactory
         $config->setWriteTimeout(120);
         $config->setConnectionTimeout(30);
 
-        $rabbitIsRemote = !str_contains(Config::get('rabbitmq.host'), 'common-resources');
-
-        if ($rabbitIsRemote) {
+        if (self::rabbitIsRemote()) {
             $config->setIsSecure(true);
             $config->setSslVerify(false);
             $config->setSslVerifyName(false);
         }
 
         return $config;
+    }
+
+    private static function rabbitIsRemote(): bool
+    {
+        return
+            !str_contains(Config::get('rabbitmq.host'), 'common-resources')
+            || !str_contains(Config::get('rabbitmq.host'), 'rabbitmq')
+            || !str_contains(Config::get('rabbitmq.user'), 'dev')
+            || !str_contains(Config::get('rabbitmq.password'), 'dev');
     }
 }
