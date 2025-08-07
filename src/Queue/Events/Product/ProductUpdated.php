@@ -55,6 +55,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public float $locationRadius,
         public bool $isOnline,
         public bool $isDelivery,
+        public float $qs,
     ) {}
 
     public static function routingName(): string
