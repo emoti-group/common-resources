@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Events\Product;
 
+use Emoti\CommonResources\Enums\Lang;
+use Emoti\CommonResources\Enums\LocationType;
 use Emoti\CommonResources\Queue\Events\AbstractEmotiEvent;
 use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
 use Ramsey\Uuid\UuidInterface;
@@ -17,6 +19,7 @@ use Ramsey\Uuid\UuidInterface;
  * @var null|array{average: float, reviewsCount: int, key: string} $rating
  * @var list<string> $pictures
  * @var null|list<array{lat: float, long: float}> $locations
+ * @var null|list<array{id: string, name: array<Lang, string>, type: LocationType}> $fittingLocations
  */
 final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInterface
 {
@@ -52,6 +55,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?string $adrenalineLevel,
         public ?string $ageLevel,
         public array $locations,
+        public array $fittingLocations,
         public float $locationRadius,
         public bool $isOnline,
         public bool $isDelivery,
