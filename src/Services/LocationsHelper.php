@@ -11,6 +11,8 @@ use InvalidArgumentException;
 
 class LocationsHelper
 {
+    public const R = 6378137.0;
+
     /**
      * Runs the Ramer-Douglas-Peucker algorithm to simplify the polygon.
      *
@@ -332,5 +334,82 @@ class LocationsHelper
         }
 
         return $coords;
+    }
+
+    public static function circleToPolygon(float $latDeg, float $lonDeg, float $radiusKm, int $numSides = 64): GeoJsonGeometryDTO
+    {
+        $d = $radiusKm / self::R;
+        $lat1 = deg2rad($latDeg);
+        $lon1 = deg2rad($lonDeg);
+
+        $ring = [];
+        for ($i = 0; $i < $numSides; $i++) {
+            $bearing = 2 * M_PI * $i / $numSides;
+
+            $lat2 = asin(sin($lat1) * cos($d) + cos($lat1) * sin($d) * cos($bearing));
+            $lon2 = $lon1 + atan2(
+                    sin($bearing) * sin($d) * cos($lat1),
+                    cos($d) - sin($lat1) * sin($lat2),
+                );
+
+            $ring[] = [rad2deg($lon2), rad2deg($lat2)];
+        }
+
+        if ($ring[0] !== end($ring)) {
+            $ring[] = $ring[0];
+        }
+
+        return GeoJsonGeometryDTO::fromValues(
+            GeoJsonGeometryType::POLYGON,
+            [$ring],
+            true,
+        );
+    }
+
+    /**
+     * @throws NotImplemented
+     */
+    public static function extendGeometryWithRadius(GeoJsonGeometryDTO $geoJsonGeometryDTO, float $radius): GeoJsonGeometryDTO
+    {
+        switch ($geoJsonGeometryDTO->type) {
+            case GeoJsonGeometryType::POINT:
+                return self::circleToPolygon(
+                    latDeg: $geoJsonGeometryDTO->coordinates[1],
+                    lonDeg: $geoJsonGeometryDTO->coordinates[0],
+                    radiusKm: $radius,
+                );
+            case GeoJsonGeometryType::MULTIPOINT:
+                $polygons = [];
+                foreach ($geoJsonGeometryDTO->coordinates as $point) {
+                    $polygons[] = self::circleToPolygon(
+                        latDeg: $point[1],
+                        lonDeg: $point[0],
+                        radiusKm: $radius,
+                    );
+                }
+
+                return self::complexifyGeoJsonTypes($polygons);
+            case GeoJsonGeometryType::LINE:
+                return GeoJsonLineHelper::lineToPolygon($geoJsonGeometryDTO, $radius * 1000);
+            case GeoJsonGeometryType::MULTILINE:
+                $lines = [];
+                foreach ($geoJsonGeometryDTO->coordinates as $line) {
+                    $lines[] = GeoJsonLineHelper::lineToPolygon($geoJsonGeometryDTO, $radius * 1000);
+                }
+
+                $lines = self::complexifyGeoJsonTypes($lines);
+
+                if ($lines->type === GeoJsonGeometryType::MULTIPOLYGON) {
+                    return GeoJsonMultiPolygonHelper::fixGeoJson($lines);
+                }
+
+                return $lines;
+            case GeoJsonGeometryType::POLYGON:
+                return GeoJsonPolygonHelper::expand($geoJsonGeometryDTO, $radius * 1000);
+            case GeoJsonGeometryType::MULTIPOLYGON:
+                return GeoJsonMultiPolygonHelper::expand($geoJsonGeometryDTO, $radius * 1000);
+            default:
+                throw new NotImplemented('GeoJsonGeometryType: '. $geoJsonGeometryDTO->type->value .' is not implemented.');
+        }
     }
 }
