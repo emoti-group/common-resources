@@ -36,6 +36,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?string $parentGeneralCategoryCmsName,
         public array $marketingCategoryIds,
         public int $supplierId,
+        public string $supplier,
         public ?string $upsellDimensionType,
         public ?string $upsellDimensionValue,
         public array $titles,
