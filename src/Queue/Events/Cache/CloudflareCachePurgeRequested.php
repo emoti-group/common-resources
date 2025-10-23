@@ -9,7 +9,7 @@ use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @var list<string> $tags
+ * @property list<string> $tags
  */
 final class CloudflareCachePurgeRequested extends AbstractEmotiEvent implements EmotiEventInterface
 {

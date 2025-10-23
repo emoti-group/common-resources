@@ -11,15 +11,15 @@ use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @var list<array{lang: string, value: string}> $generalCategoryNames
- * @var null|list<array{lang: string, value: string}> $parentGeneralCategoryNames
- * @var list<array{lang: string, value: string}> $titles
- * @var list<array{lang: string, value: string}> $descriptions
- * @var list<string> $tags
- * @var null|array{average: float, reviewsCount: int, key: string} $rating
- * @var list<string> $pictures
- * @var null|list<array{lat: float, long: float}> $locations
- * @var null|list<array{id: string, name: array<Lang, string>, type: LocationType}> $fittingLocations
+ * @property list<array{lang: string, value: string}> $generalCategoryNames
+ * @property null|list<array{lang: string, value: string}> $parentGeneralCategoryNames
+ * @property list<array{lang: string, value: string}> $titles
+ * @property list<array{lang: string, value: string}> $descriptions
+ * @property list<string> $tags
+ * @property null|array{average: float, reviewsCount: int, key: string} $rating
+ * @property list<string> $pictures
+ * @property null|list<array{lat: float, long: float}> $locations
+ * @property null|list<array{id: string, name: array<Lang, string>, type: LocationType}> $fittingLocations
  */
 final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInterface
 {
