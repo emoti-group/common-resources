@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Emoti\CommonResources\Commands;
 
 use Emoti\CommonResources\Queue\Consumer\ConsumerInterface;
-use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;
+use Throwable;
 
 class ExternalQueueWork extends Command
 {
@@ -19,7 +19,7 @@ class ExternalQueueWork extends Command
         $consumer = App::make(ConsumerInterface::class);
 
         $consumer->consume(
-            captureException: fn(Exception $e) => report($e),
+            captureException: fn(Throwable $e) => report($e),
         );
     }
 }
