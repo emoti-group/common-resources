@@ -19,6 +19,7 @@ use Ramsey\Uuid\UuidInterface;
  * @property list<string> $pictures
  * @property null|list<array{lat: float, long: float}> $locations
  * @property null|list<array{id: string, name: array<Lang, string>, type: string}> $fittingLocations
+ * @property list<int> $packageChildrenIds Ids of products that belong to this product. Empty when isPackage property is false.
  */
 final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInterface
 {
@@ -65,6 +66,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public bool $isOnline,
         public bool $isDelivery,
         public float $qs,
+        public array $packageChildrenIds,
     ) {}
 
     public static function routingName(): string
