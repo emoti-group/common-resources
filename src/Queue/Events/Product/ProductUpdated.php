@@ -67,6 +67,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public bool $isDelivery,
         public float $qs,
         public array $packageChildrenIds,
+        public bool $isGlobal = false, // remove default value after migration period
     ) {}
 
     public static function routingName(): string
