@@ -17,7 +17,7 @@ use Ramsey\Uuid\UuidInterface;
  * @property list<string> $tags
  * @property null|array{average: float, reviewsCount: int, key: string} $rating
  * @property list<string> $pictures
- * @property null|list<array{lat: float, long: float}> $locations
+ * @property null|list<array{lat: float, long: float, city: string}> $locations
  * @property null|list<array{id: string, name: array<Lang, string>, type: string}> $fittingLocations
  * @property list<int> $packageChildrenIds Ids of products that belong to this product. Empty when isPackage property is false.
  */
