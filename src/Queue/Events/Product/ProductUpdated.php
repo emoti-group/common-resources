@@ -20,6 +20,7 @@ use Ramsey\Uuid\UuidInterface;
  * @property null|list<array{lat: float, long: float, city: string}> $locations
  * @property null|list<array{id: string, name: array<Lang, string>, type: string}> $fittingLocations
  * @property list<int> $packageChildrenIds Ids of products that belong to this product. Empty when isPackage property is false.
+ * @property list<string> $cacheTagsToInvalidate Cache tags of OLD entities that were attached to the product, but they are not anymore. Example: locations that were removed from the product.
  */
 final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInterface
 {
@@ -68,6 +69,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public float $qs,
         public array $packageChildrenIds,
         public bool $isGlobal = false, // remove default value after migration period
+        public array $cacheTagsToInvalidate = [],
     ) {}
 
     public static function routingName(): string
