@@ -105,11 +105,42 @@ trait ArrayableTrait
             return;
         }
 
-        if ($value === null && $property->hasDefaultValue()) {
-            $property->setValue($instance, $property->getDefaultValue());
-            return;
+        if ($value === null) {
+            $defaultValue = self::getPropertyDefaultValue($property, $instance);
+
+            if ($defaultValue !== null) {
+                $property->setValue($instance, $defaultValue);
+                return;
+            }
+
+            $type = $property->getType();
+            if ($type && !$type->allowsNull()) {
+                return;
+            }
         }
 
         $property->setValue($instance, $value);
+    }
+
+    private static function getPropertyDefaultValue(ReflectionProperty $property, object $instance): mixed
+    {
+        // Try property default value first (works for non-promoted properties)
+        if ($property->hasDefaultValue()) {
+            return $property->getDefaultValue();
+        }
+
+        // For promoted constructor parameters, check constructor
+        $class = new ReflectionClass($instance);
+        $constructor = $class->getConstructor();
+
+        if ($constructor) {
+            foreach ($constructor->getParameters() as $param) {
+                if ($param->getName() === $property->getName() && $param->isDefaultValueAvailable()) {
+                    return $param->getDefaultValue();
+                }
+            }
+        }
+
+        return null;
     }
 }
