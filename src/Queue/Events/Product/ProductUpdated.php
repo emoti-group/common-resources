@@ -67,7 +67,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public bool $isOnline,
         public bool $isDelivery,
         public float $qs,
-        public ?array $packageChildrenIds = null,
+        public array $packageChildrenIds = [],
         public bool $isGlobal = false, // remove default value after migration period
         public array $cacheTagsToInvalidate = [],
     ) {}
