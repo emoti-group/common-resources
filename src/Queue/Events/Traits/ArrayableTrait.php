@@ -105,6 +105,11 @@ trait ArrayableTrait
             return;
         }
 
+        if ($value === null && $property->hasDefaultValue()) {
+            $property->setValue($instance, $property->getDefaultValue());
+            return;
+        }
+
         $property->setValue($instance, $value);
     }
 }
