@@ -12,7 +12,8 @@
     "ramsey/uuid": "^4.7",
     "php-amqplib/php-amqplib": "^3.7",
     "spatie/laravel-data": "^4.17",
-    "ext-sockets": "*"
+    "ext-sockets": "*",
+    "posthog/posthog-php": "^3.7"
   },
   "require-dev": {
     "laravel/framework": "^12.0",
