@@ -144,10 +144,6 @@ abstract class PostHogAbstractService
     {
         $variant = $this->getFeatureVariant($featureFlag);
 
-        if (is_bool($variant)) {
-            return $variant;
-        }
-
         return $variant !== 'control';
     }
 
@@ -162,8 +158,9 @@ abstract class PostHogAbstractService
                 $featureFlag->value,
                 $this->getDistinctId(),
             );
+
             if (is_bool($variant)) {
-                return $variant;
+                return $variant ? 'feature' : 'control';
             }
 
             return $variant;
