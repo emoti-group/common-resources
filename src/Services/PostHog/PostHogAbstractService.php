@@ -12,6 +12,7 @@ use Emoti\CommonResources\Enums\PostHogEvent;
 use Emoti\CommonResources\Enums\Site;
 use Emoti\CommonResources\Exceptions\PostHog\PostHogNotInitializedException;
 use Exception;
+use Illuminate\Support\Str;
 use Log;
 use PostHog\PostHog;
 use Psr\Container\ContainerExceptionInterface;
@@ -338,19 +339,10 @@ abstract class PostHogAbstractService
      */
     private function uuidFromIp(string $ip): string
     {
-        $callback = fn() => Guid::uuid5(
+        return Guid::uuid5(
             '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-            $ip,
+            $ip . Str::random(),
         )
             ->toString();
-
-        if (!function_exists('cache')) {
-            return $callback();
-        }
-
-        return cache()->rememberForever(
-            'uuid_from_ip|' . $ip,
-            $callback,
-        );
     }
 }
