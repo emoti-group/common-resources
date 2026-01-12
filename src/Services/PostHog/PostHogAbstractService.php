@@ -160,6 +160,10 @@ abstract class PostHogAbstractService
      */
     public function updateDistinctId(?string $newDistinctId): void
     {
+        if (!$this->isInitialized()) {
+            return;
+        }
+
         $oldDistinctId = $this->distinctId;
         if (!is_null($newDistinctId)) {
             $this->setDistinctId($this->site->value . '_' . $newDistinctId);
