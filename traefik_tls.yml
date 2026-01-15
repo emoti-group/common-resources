@@ -1,0 +1,11 @@
+tls:
+  certificates:
+    - certFile: /certs/emoti.crt
+      keyFile: /certs/emoti.key
+      stores:
+        - default
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /certs/emoti.crt
+        keyFile: /certs/emoti.key

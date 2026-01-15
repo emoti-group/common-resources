@@ -1,13 +1,15 @@
 version: "3.8"
 
 networks:
-  proxy-network:
+  common-resources-network:
     name: common-resources-network
     driver: bridge
+    external: true
 
 volumes:
   rabbitmq-data:
   es-data:
+  traefik_letsencrypt:
 
 services:
   rabbitmq:
@@ -21,7 +23,7 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     networks:
-      - proxy-network
+      - common-resources-network
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
       interval: 10s
@@ -41,7 +43,7 @@ services:
     volumes:
       - es-data:/usr/share/elasticsearch/data
     networks:
-      - proxy-network
+      - common-resources-network
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://127.0.0.2:9200 || exit 1" ]
       interval: 10s
@@ -51,3 +53,46 @@ services:
       resources:
         limits:
           memory: 1g
+
+  traefik:
+    image: traefik:latest
+    command:
+      # Providers
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+
+      # EntryPoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+
+      - "--providers.file.directory=/dynamic"
+      - "--providers.file.watch=true"
+
+      # HTTP → HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+
+      # Dashboard
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+
+      # Logs
+      - "--log.level=INFO"
+      - "--accesslog=true"
+
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8081:8080"
+
+    volumes:
+      - traefik_letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./.traefik-devcerts:/certs:ro
+      - ./traefik_tls.yml:/dynamic/tls.yml:ro
+
+    labels:
+      - "traefik.docker.network=common-resources-network"
+
+    networks:
+      - common-resources-network
