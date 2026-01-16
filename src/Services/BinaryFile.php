@@ -6,8 +6,8 @@ namespace Emoti\CommonResources\Services;
 
 class BinaryFile
 {
-    private function __construct(
-        private string $content,
+    protected function __construct(
+        protected string $content,
         public ?string $name,
     ) {}
 
