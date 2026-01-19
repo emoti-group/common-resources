@@ -33,9 +33,9 @@ final class RabbitMqConnectionFactory
         $config->setUser(Config::get('rabbitmq.user'));
         $config->setPassword(Config::get('rabbitmq.password'));
         $config->setKeepalive(true);
-        $config->setHeartbeat(60);
-        $config->setReadTimeout(120);
-        $config->setWriteTimeout(120);
+        $config->setHeartbeat(600);
+        $config->setReadTimeout(1200);
+        $config->setWriteTimeout(1200);
         $config->setConnectionTimeout(30);
 
         if (self::rabbitIsRemote()) {
