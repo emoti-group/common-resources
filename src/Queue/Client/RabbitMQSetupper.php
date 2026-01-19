@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Emoti\CommonResources\Queue\Client;
 
 use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
+use Emoti\CommonResources\Queue\Events\System\ExternalQueueRestartRequested;
 use Emoti\CommonResources\Support\Config\Config;
 use Emoti\CommonResources\Support\Storage\Storage;
 use Exception;
@@ -35,13 +36,16 @@ final class RabbitMQSetupper
 
     private function getRoutingKeys(): array
     {
-        return collect(Config::get('bindings'))
+        $routingKeys = collect(Config::get('bindings'))
             ->keys()
             ->map(
             /** @param class-string $eventClass */
                 fn(string $eventClass) => $eventClass::routingKey(),
             )
+            ->prepend(ExternalQueueRestartRequested::routingKey())
             ->toArray();
+
+        return array_unique($routingKeys);
     }
 
     private function declareExchangeAndQueue(string $queueSuffix): array
