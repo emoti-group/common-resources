@@ -9,6 +9,7 @@ use Emoti\CommonResources\Queue\Client\RabbitMQClient;
 use Emoti\CommonResources\Queue\Client\RabbitMQSetupper;
 use Emoti\CommonResources\Queue\EmotiListenerInterface;
 use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
+use Emoti\CommonResources\Queue\Events\System\ExternalQueueRestartRequested;
 use Emoti\CommonResources\Queue\Message;
 use Emoti\CommonResources\Support\Config\Config;
 use Exception;
@@ -57,13 +58,18 @@ final class RabbitMQConsumer implements ConsumerInterface
     {
         $callback = function (AMQPMessage $AMQPMessage) use ($captureException) {
             try {
-                $this->processTheMessage($AMQPMessage);
+                $event = $this->processTheMessage($AMQPMessage);
             } catch (Exception $e) {
                 $AMQPMessage->nack();
                 $captureException($e);
                 return;
             }
+
             $AMQPMessage->ack();
+
+            if ($event instanceof ExternalQueueRestartRequested) {
+                exit;
+            }
         };
 
         $this->client->channel->basic_consume(
@@ -73,12 +79,13 @@ final class RabbitMQConsumer implements ConsumerInterface
         );
     }
 
-    private function processTheMessage(AMQPMessage $AMQPMessage): void
+    private function processTheMessage(AMQPMessage $AMQPMessage): EmotiEventInterface
     {
         $message = Message::fromJson($AMQPMessage->getBody());
 
         /** @var EmotiEventInterface $event */
         $event = $message->class::fromArray($message->content);
+
         $listener = Config::get('bindings')[$event::class] ?? null;
 
         if ($listener) {
@@ -86,6 +93,8 @@ final class RabbitMQConsumer implements ConsumerInterface
             $listenerInstance = App::getFacadeRoot() ? App::make($listener) : new $listener();
             $listenerInstance->handle($event);
         }
+
+        return $event;
     }
 
     private function getConsumerTag(): string
