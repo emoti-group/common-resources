@@ -47,6 +47,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public array $tags,
         public ?array $rating,
         public array $pictures,
+        public float $costprice,
         public float $priceBeforeDiscount,
         public float $priceAfterDiscount,
         public int $discountPercent,
