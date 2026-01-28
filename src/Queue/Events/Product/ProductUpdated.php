@@ -73,6 +73,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public bool $isGlobal = false, // remove default value after migration period
         public array $cacheTagsToInvalidate = [],
         public array $urlsPerLang = [],
+        public bool $blockOnlineOrders = false,
     ) {}
 
     public static function routingName(): string
