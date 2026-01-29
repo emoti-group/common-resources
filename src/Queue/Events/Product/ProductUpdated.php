@@ -27,6 +27,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
 {
     public function __construct(
         public int $id,
+        public ?int $parentId,
         public string $status,
         public string $cmsName,
         public string $type,
