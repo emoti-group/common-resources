@@ -27,18 +27,24 @@ abstract class PostHogAbstractService
     protected array $breadcrumbs = [];
     protected bool $initialized = false;
     protected string $project;
+    protected ?string $apiKey;
     protected string $environment;
     protected ?string $ip;
     protected ?string $origin = null;
     protected ?string $referer = null;
+    protected array $lastFeaturesFlagVariants = [];
+    protected array $currentFeaturesFlagVariants = [];
     protected array $headers;
     protected Site $site;
     protected bool $isTrusted = false;
     protected bool $debug = false;
 
+    public function isInitialized(): bool
+    {
+        return $this->initialized;
+    }
+
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      * @throws Exception
      */
     public function init(
@@ -50,28 +56,23 @@ abstract class PostHogAbstractService
         ?string $ip,
         bool $isTrustedVisitor = false,
         array $headers = [],
+        array $lastFeaturesFlagVariants = [],
         bool $enabled = true,
         ?string $ownDistinctId = null,
         bool $debug = false
     ): void
     {
         if (!$enabled || empty($host) || empty($apiKey) || $this->isInitialized()) return;
-        
+
+        $this->apiKey = $apiKey;
         $this->isTrusted = $isTrustedVisitor;
         $this->headers = $headers;
+        $this->lastFeaturesFlagVariants = $lastFeaturesFlagVariants;
         $this->environment = $environment;
         $this->project = $project;
         $this->site = $site;
         $this->debug = $debug;
         $this->ip = $ip;
-
-        PostHog::init(
-            $apiKey,
-            [
-                'host' => $host,
-                'debug' => $debug,
-            ],
-        );
 
         $origin = $headers['origin'] ?? '';
         if (is_array($origin)) {
@@ -82,46 +83,35 @@ abstract class PostHogAbstractService
             $this->referer = $referer[0] ?? '';
         }
 
-        $this->setDistinctId($ownDistinctId);
-        $this->initialized = true;
-    }
+        PostHog::init(
+            $apiKey,
+            [
+                'host' => $host,
+                'debug' => $debug,
+            ],
+        );
 
-    public function isInitialized(): bool
-    {
-        return $this->initialized;
+        $this->initialized = true;
+
+        $this->setDistinctId($ownDistinctId);
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws Exception
      */
     public function setIdentification(): void
     {
-        if (!$this->initialized) {
+        if (!$this->isInitialized()) {
             return;
         }
-
-        $cacheAvailable = function_exists('cache');
 
         $distinctId = $this->getDistinctId();
         $properties = $this->getIdentificationProperties();
 
-        $cacheKey = 'posthog_identificator|' . $distinctId;
-        $propertiesSignature = !$cacheAvailable ?: md5(json_encode($properties));
-
-        if (
-            !$cacheAvailable
-            || cache()->get($cacheKey) !== $propertiesSignature
-        ) {
-            PostHog::identify([
-                'distinctId' => $distinctId,
-                'properties' => $properties,
-            ]);
-
-            if ($cacheAvailable) {
-                cache()->put($cacheKey, $propertiesSignature, 86400);
-            }
-        }
+        PostHog::identify([
+            'distinctId' => $distinctId,
+            'properties' => $properties,
+        ]);
     }
 
     public function getDistinctId(): string
@@ -130,32 +120,29 @@ abstract class PostHogAbstractService
     }
 
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws Exception
      */
-    public function setDistinctId(?string $ownId = null): string
+    public function setDistinctId(?string $ownId = null): ?string
     {
+        if (!$this->isInitialized()) {
+            return null;
+        }
+
         if (empty($this->distinctId) && empty($ownId)) {
             $this->distinctId = ($this->environment . '_' . $this->site->value . '_IP_' . $this->uuidFromIp($this->ip ?? 'unknown'));
 
             $this->setIdentification();
+            $this->updatedDistinctId();
         } elseif (!empty($ownId)) {
             $this->distinctId = $ownId;
+
+            $this->updatedDistinctId();
         }
 
         return $this->distinctId;
     }
 
-    public function resetDistinctId(): void
-    {
-        $this->distinctId = null;
-
-        $this->updatedDistinctId();
-    }
-
     /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      * @throws Exception
      */
     public function updateDistinctId(?string $newDistinctId): void
@@ -174,6 +161,11 @@ abstract class PostHogAbstractService
         if (!is_null($newDistinctId)) {
             $this->alias($oldDistinctId);
         }
+    }
+
+    public function resetDistinctId(): void
+    {
+        $this->distinctId = null;
 
         $this->updatedDistinctId();
     }
@@ -183,13 +175,16 @@ abstract class PostHogAbstractService
         $this->breadcrumbs[] = $breadcrumb;
     }
 
+    /**
+     * @throws Throwable
+     */
     public function capture(PostHogEvent $event, ?array $properties = null): bool
     {
-        try {
-            if (!$this->initialized) {
-                return false;
-            }
+        if (!$this->isInitialized()) {
+            return false;
+        }
 
+        try {
             $captureData = $this->prepareCaptureData($event, $properties);
 
             return PostHog::capture($captureData->toArray());
@@ -227,81 +222,66 @@ abstract class PostHogAbstractService
         ]);
     }
 
-    /**
-     * @throws PostHogNotInitializedException
-     */
-    public function getFeatureVariant(FeatureFlag $featureFlag): ?string
+    public function getAllKnownFeaturesFlagVariants(): array
     {
-        if (!$this->initialized) {
-            throw new PostHogNotInitializedException('Cannot get feature flag; PostHog not initialized.');
-        }
-
-        $callback = function () use ($featureFlag) {
-            $variant = PostHog::getFeatureFlag(
-                $featureFlag->value,
-                $this->getDistinctId(),
-            );
-
-            if (is_bool($variant)) {
-                return $variant ? 'feature' : 'control';
-            }
-
-            return $variant;
-        };
-
-        if (function_exists('cache')) {
-            $variant = cache()->remember(
-                'posthog_feature_flag|' . $this->getDistinctId() . '|' . $featureFlag->value,
-                60,
-                $callback,
-            );
-        } else {
-            $variant = $callback();
-        }
-
-        (new PostHogBreadcrumb(
-            level: 'info',
-            type: 'default',
-            category: 'feature_flag',
-            message: 'Feature flag ' . $featureFlag->value . ' checked',
-            metadata: [
-                'feature_flag' => $featureFlag->value,
-                'result' => $variant,
-            ]
-        ))->push($this);
-
-        return $variant;
+        return $this->lastFeaturesFlagVariants;
     }
 
     /**
      * @throws PostHogNotInitializedException
      * @throws Exception
      */
-    public function getFeatureFlag(FeatureFlag $featureFlag): bool
+    public function getFeatureVariant(FeatureFlag $featureFlag): ?string
     {
-        $variant = $this->getFeatureVariant($featureFlag);
-
-        return $variant !== 'control';
-    }
-
-    protected function getDistinctIdFromCookie(array $cookies): ?string
-    {
-        $posthugCookieKey = array_values(
-            array_filter(
-                array_keys($cookies),
-                fn($key) => str_starts_with($key, 'ph_phc_') && str_ends_with($key, '_posthog'),
-            ),
-        )[0] ?? null;
-
-        if (empty($posthugCookieKey) || empty($cookies[$posthugCookieKey])) {
-            return null;
+        if (!$this->initialized) {
+            return 'control';
         }
 
-        return json_decode($cookies[$posthugCookieKey])->distinct_id ?? null;
+        if (array_key_exists($featureFlag->value, $this->currentFeaturesFlagVariants)) {
+            return $this->currentFeaturesFlagVariants[$featureFlag->value];
+        }
+
+        $currentVariant = null;
+        if (array_key_exists($featureFlag->value, $this->lastFeaturesFlagVariants)) {
+            $currentVariant = $this->getFeatureVariantFromPostHog($featureFlag, false);
+        }
+
+        if (is_null($currentVariant) || $this->lastFeaturesFlagVariants[$featureFlag->value] !== $currentVariant) {
+            $currentVariant = $this->getFeatureVariantFromPostHog($featureFlag, true);
+        }
+
+        $this->lastFeaturesFlagVariants[$featureFlag->value] = $currentVariant;
+        $this->currentFeaturesFlagVariants[$featureFlag->value] = $currentVariant;
+
+        return $currentVariant;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getFeatureVariantFromPostHog(FeatureFlag $featureFlag, bool $sendFeatureFlagEvents = false): ?string
+    {
+        $variant = PostHog::getFeatureFlag(
+            $featureFlag->value,
+            $this->getDistinctId(),
+            sendFeatureFlagEvents: $sendFeatureFlagEvents
+        );
+
+        if (is_bool($variant)) {
+            return $variant ? 'feature' : 'control';
+        }
+
+        return $variant;
+    }
+
+    protected function phCookieName(?string $apiKey = null): string
+    {
+        return 'ph_' . ($apiKey ?? $this->apiKey) . '_posthog';
     }
 
     protected function extendIdentificationProperties(): array
     {
+        // Implement in child classes if needed
         return [];
     }
 
@@ -315,8 +295,6 @@ abstract class PostHogAbstractService
         $properties = [
             'environment' => $this->environment,
             'site' => $this->site->value,
-            'header_features_enable' => array_filter(explode(',', $this->headers['X-Features-Enable'] ?? '')),
-            'header_features_disable' => array_filter(explode(',', $this->headers['X-Features-Enable'] ?? '')),
             'platform' => $this->project,
         ];
 
@@ -325,23 +303,10 @@ abstract class PostHogAbstractService
 
     protected function preparePropertiesData(?array $properties): PropertiesData
     {
+        // Implement in child classes if needed
+
         $properties ??= [];
-
-        $basicData = [
-            'environment' => $this->environment,
-            'platform' => $this->project,
-            'breadcrumbs' => $this->getBreadcrumbs(),
-            '$current_url' => request()->fullUrl(),
-            'search_params' => request()->query(),
-            'route_controller' => request()->route()?->getControllerClass() ?? 'null',
-            'route_action' => request()->route()?->getActionMethod() ?? 'null',
-            'route_params' => request()->route()?->parameters() ?? [],
-            'origin' => $this->origin,
-            'referer' => $this->referer,
-            'trusted_visitor' => $this->isTrusted,
-        ];
-
-        return PropertiesData::fromArrays($properties, $basicData);
+        return PropertiesData::fromArrays($properties);
     }
 
     protected function getBreadcrumbs(): array
