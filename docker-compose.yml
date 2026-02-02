@@ -4,7 +4,6 @@ networks:
   common-resources-network:
     name: common-resources-network
     driver: bridge
-    external: true
 
 volumes:
   rabbitmq-data:
