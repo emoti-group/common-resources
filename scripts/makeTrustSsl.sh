@@ -68,7 +68,7 @@ extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1 = *.emoti
+DNS.1 = api.emoti
 DNS.2 = *.agcore.emoti
 EOF
 else
