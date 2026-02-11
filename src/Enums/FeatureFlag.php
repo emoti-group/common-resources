@@ -9,4 +9,5 @@ enum FeatureFlag: string
     case RedisCache = 'redis-cache';
     case LevelFilters = 'level-filters';
     case NewListingTestV2 = 'new_listing_test_v2';
+    case SelfService = 'self-service';
 }
