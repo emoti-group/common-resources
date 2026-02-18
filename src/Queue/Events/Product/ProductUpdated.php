@@ -11,6 +11,7 @@ use Ramsey\Uuid\UuidInterface;
 
 /**
  * @property list<array{lang: string, value: string}> $generalCategoryNames
+ * @property list<array{externalId: int, price: float, priceBeforeDiscount: ?float, discountPercentage: ?float, type: string, value: array<string, string>, label: array<string, string>}> $upsellProducts
  * @property null|list<array{lang: string, value: string}> $parentGeneralCategoryNames
  * @property list<array{lang: string, value: string}> $titles
  * @property list<array{lang: string, value: string}> $descriptions
@@ -43,6 +44,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public string $supplier_path,
         public ?string $upsellDimensionType,
         public ?string $upsellDimensionValue,
+        public array $upsellProducts = [],
         public array $titles,
         public array $descriptions,
         public array $tags,
