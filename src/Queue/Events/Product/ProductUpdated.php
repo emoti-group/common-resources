@@ -44,7 +44,6 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public string $supplier_path,
         public ?string $upsellDimensionType,
         public ?string $upsellDimensionValue,
-        public array $upsellProducts = [],
         public array $titles,
         public array $descriptions,
         public array $tags,
@@ -76,6 +75,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public bool $isGlobal = false, // remove default value after migration period
         public array $cacheTagsToInvalidate = [],
         public array $urlsPerLang = [],
+        public array $upsellProducts = [],
     ) {}
 
     public static function routingName(): string
