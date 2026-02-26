@@ -175,6 +175,11 @@ abstract class PostHogAbstractService
         $this->breadcrumbs[] = $breadcrumb;
     }
 
+    public function clearBreadcrumbs(): void
+    {
+        $this->breadcrumbs = [];
+    }
+
     /**
      * @throws Throwable
      */
