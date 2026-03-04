@@ -72,6 +72,8 @@ final class RabbitMQConsumer implements ConsumerInterface
             }
         };
 
+        $this->client->channel->basic_qos(prefetch_size: 0, prefetch_count: 10, a_global: false);
+
         $this->client->channel->basic_consume(
             queue: $queueName,
             consumer_tag: $this->getConsumerTag(),
