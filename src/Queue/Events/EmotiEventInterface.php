@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Events;
 
+use Carbon\CarbonImmutable;
 use Emoti\CommonResources\Enums\Site;
 use Ramsey\Uuid\UuidInterface;
 
@@ -24,6 +25,8 @@ interface EmotiEventInterface
     public function site(): Site;
 
     public function eventId(): UuidInterface;
+
+    public function sendAt(): CarbonImmutable;
 
     /** ArrayableTrait **/
     public function data(): array;

@@ -18,6 +18,7 @@ trait DispatchableTrait
 
         $this->setSite($site);
         $this->setEventId();
+        $this->setSendAt();
 
         $publisher->publish(
             new Message($this->toArray(), static::class),
