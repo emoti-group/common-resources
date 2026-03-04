@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Events\Traits;
 
+use Carbon\CarbonImmutable;
 use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Emoti\CommonResources\Enums\Site;
 use Ramsey\Uuid\Uuid;
@@ -14,6 +15,7 @@ trait ExtraPropertiesTrait
 {
     protected Site $site;
     protected UuidInterface $eventId;
+    protected CarbonImmutable $sendAt;
 
     public static function routingKey(): string
     {
@@ -38,5 +40,15 @@ trait ExtraPropertiesTrait
     public function setEventId(): void
     {
         $this->eventId = Uuid::uuid7();
+    }
+
+    public function sendAt(): CarbonImmutable
+    {
+        return $this->sendAt;
+    }
+
+    public function setSendAt(): void
+    {
+        $this->sendAt = CarbonImmutable::now();
     }
 }

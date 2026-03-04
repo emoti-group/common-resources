@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Emoti\CommonResources\Queue\Events\Traits;
 
 use BackedEnum;
+use Carbon\CarbonImmutable;
 use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Ramsey\Uuid\Uuid;
 use ReflectionClass;
@@ -56,6 +57,7 @@ trait ArrayableTrait
     {
         return [
             'site' => $this->site()->value,
+            'sendAt' => $this->sendAt()->toIso8601String(),
             'data' => $this->data(),
             'resourceId' => $this->resourceId(),
             'resourceUuid' => $this->resourceUuid()?->toString(),
@@ -94,6 +96,10 @@ trait ArrayableTrait
             if (str_contains($typeName, 'UuidInterface')) {
                 return Uuid::fromString($value);
             }
+
+            if ($typeName === CarbonImmutable::class) {
+                return CarbonImmutable::parse($value);
+            }
         }
 
         return $value;
@@ -101,7 +107,7 @@ trait ArrayableTrait
 
     private static function setPropertyValue(ReflectionProperty $property, object $instance, mixed $value): void
     {
-        if ($value === null && in_array($property->getName(), ['eventId', 'site'], true)) {
+        if ($value === null && in_array($property->getName(), ['eventId', 'site', 'sendAt'], true)) {
             return;
         }
 
