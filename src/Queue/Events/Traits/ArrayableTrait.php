@@ -8,6 +8,7 @@ use BackedEnum;
 use Carbon\CarbonImmutable;
 use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use ReflectionClass;
 use ReflectionProperty;
 use ReflectionType;
@@ -85,20 +86,20 @@ trait ArrayableTrait
                 return $typeName::from($value);
             }
 
+            if ($typeName === UuidInterface::class) {
+                return Uuid::fromString($value);
+            }
+
+            if ($typeName === CarbonImmutable::class) {
+                return CarbonImmutable::parse($value);
+            }
+
             if (class_exists($typeName) && method_exists($typeName, 'fromArray')) {
                 return $typeName::fromArray($value);
             }
 
             if (class_exists($typeName) && method_exists($typeName, 'from')) {
                 return $typeName::from($value);
-            }
-
-            if (str_contains($typeName, 'UuidInterface')) {
-                return Uuid::fromString($value);
-            }
-
-            if ($typeName === CarbonImmutable::class) {
-                return CarbonImmutable::parse($value);
             }
         }
 
