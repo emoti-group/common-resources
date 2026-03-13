@@ -7,10 +7,10 @@ namespace Emoti\CommonResources\Queue\Client;
 use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Emoti\CommonResources\Support\Config\Config;
 use Emoti\CommonResources\Support\SingletonTrait;
-use Exception;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AbstractConnection;
 use PhpAmqpLib\Wire\AMQPTable;
+use Throwable;
 
 #[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 final class RabbitMQClient
@@ -20,21 +20,34 @@ final class RabbitMQClient
     public AbstractConnection $connection;
     public AMQPChannel $channel;
 
-    /**
-     * @throws Exception
-     */
     private function __construct()
     {
+        $this->connect();
+    }
+
+    public function reconnect(): void
+    {
         try {
-            $this->connection = RabbitMqConnectionFactory::create();
-            $this->channel = $this->connection->channel();
-        } catch (Exception $e) {
-            throw new Exception('Failed to connect to RabbitMQ:' . $e->getMessage());
+            if ($this->channel->is_open()) {
+                $this->channel->close();
+            }
+        } catch (Throwable) {
         }
+
+        try {
+            if ($this->connection->isConnected()) {
+                $this->connection->close();
+            }
+        } catch (Throwable) {
+        }
+
+        $this->connect();
     }
 
     public function declareQueue(string $queueSuffix): string
     {
+        $this->ensureConnected();
+
         $queueName = $this->buildQueueName($queueSuffix);
 
         $this->channel->queue_declare(
@@ -58,6 +71,8 @@ final class RabbitMQClient
 
     public function declareExchange(): string
     {
+        $this->ensureConnected();
+
         $exchangeName = $this->buildExchangeName();
         $this->channel->exchange_declare(
             exchange: $exchangeName,
@@ -71,6 +86,8 @@ final class RabbitMQClient
 
     public function bindQueueToExchange(string $queueName, string $exchangeName, array $routingKeys): void
     {
+        $this->ensureConnected();
+
         foreach ($routingKeys as $routingKey) {
             $this->channel->queue_bind($queueName, $exchangeName, $routingKey);
         }
@@ -78,8 +95,23 @@ final class RabbitMQClient
 
     public function unbindQueueFromExchange(string $queueName, string $exchangeName, array $routingKeys): void
     {
+        $this->ensureConnected();
+
         foreach ($routingKeys as $routingKey) {
             $this->channel->queue_unbind($queueName, $exchangeName, $routingKey);
+        }
+    }
+
+    private function connect(): void
+    {
+        $this->connection = RabbitMqConnectionFactory::create();
+        $this->channel = $this->connection->channel();
+    }
+
+    private function ensureConnected(): void
+    {
+        if (!$this->connection->isConnected() || !$this->channel->is_open()) {
+            $this->reconnect();
         }
     }
 
