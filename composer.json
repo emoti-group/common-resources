@@ -13,7 +13,10 @@
     "php-amqplib/php-amqplib": "^3.7",
     "spatie/laravel-data": "^4.17",
     "ext-sockets": "*",
-    "posthog/posthog-php": "^3.7"
+    "posthog/posthog-php": "^3.7",
+    "open-telemetry/api": "^1.8",
+    "open-telemetry/exporter-otlp": "^1.4",
+    "open-telemetry/sdk": "^1.13"
   },
   "require-dev": {
     "laravel/framework": "^12.0",
@@ -24,6 +27,12 @@
       "providers": [
         "Emoti\\CommonResources\\CommonResourcesServiceProvider"
       ]
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "php-http/discovery": true,
+      "tbachert/spi": true
     }
   }
 }
