@@ -32,13 +32,16 @@ basically more of a job than an event), you should not use this solution, but ra
    
    namespace App\Listeners;
    
+   use Emoti\CommonResources\Queue\EmotiListenerInterface;
    use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
    use Emoti\CommonResources\Queue\Events\Product\ProductAddedToUpsellGroup;
-   
-   final readonly class ProductAddedToUpsellGroupListener implements EmotiEventInterface
+
+   final readonly class ProductAddedToUpsellGroupListener implements EmotiListenerInterface
    {
-       public function handle(ProductAddedToUpsellGroup $event): void
+       public function handle(EmotiEventInterface $event): void
        {
+           assert($event instanceof ProductAddedToUpsellGroup);
+
            dump('Event received!');
        }
    }
@@ -86,18 +89,21 @@ $event->dispatch(Site::PL);
 1. Create a listener
    ```php
    <?php
-      
+
    declare(strict_types=1);
-   
+
    namespace App\Listeners;
 
-   use Emoti\CommonResources\Queue\EmotiListenerInterface; use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
+   use Emoti\CommonResources\Queue\EmotiListenerInterface;
+   use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
    use Emoti\CommonResources\Queue\Events\Product\ProductAddedToUpsellGroup;
-   
+
    final readonly class ProductAddedToUpsellGroupListener implements EmotiListenerInterface
    {
-       public function handle(ProductAddedToUpsellGroup $event): void
+       public function handle(EmotiEventInterface $event): void
        {
+           assert($event instanceof ProductAddedToUpsellGroup);
+
            dump('Event received!');
        }
    }
