@@ -59,14 +59,16 @@ final class RabbitMQConsumer implements ConsumerInterface
         $callback = function (AMQPMessage $AMQPMessage) use ($captureException) {
             try {
                 $event = $this->processTheMessage($AMQPMessage);
-                $AMQPMessage->ack();
-
-                if ($event instanceof ExternalQueueRestartRequested) {
-                    exit;
-                }
             } catch (Exception $e) {
                 $AMQPMessage->nack();
                 $captureException($e);
+                return;
+            }
+
+            $AMQPMessage->ack();
+
+            if ($event instanceof ExternalQueueRestartRequested) {
+                exit;
             }
         };
 
@@ -91,35 +93,10 @@ final class RabbitMQConsumer implements ConsumerInterface
         if ($listener) {
             /** @var EmotiListenerInterface $listenerInstance */
             $listenerInstance = App::getFacadeRoot() ? App::make($listener) : new $listener();
-            $this->handleWithRetry($listenerInstance, $event);
+            $listenerInstance->handle($event);
         }
 
         return $event;
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function handleWithRetry(EmotiListenerInterface $listener, EmotiEventInterface $event): void
-    {
-        $maxRetries = 3;
-        $retryDelay = 5;
-        $lastException = null;
-
-        for ($attempt = 0; $attempt <= $maxRetries; $attempt++) {
-            try {
-                $listener->handle($event);
-                return;
-            } catch (Exception $e) {
-                $lastException = $e;
-
-                if ($attempt < $maxRetries) {
-                    sleep($retryDelay);
-                }
-            }
-        }
-
-        throw $lastException;
     }
 
     private function getConsumerTag(): string
