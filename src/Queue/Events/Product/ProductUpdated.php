@@ -18,11 +18,27 @@ use Ramsey\Uuid\UuidInterface;
  * @property list<string> $tags
  * @property null|array{average: float, reviewsCount: int, key: string} $rating
  * @property list<string> $pictures
+ * @property list<string> $videos
  * @property null|list<array{lat: float, long: float, city: string}> $locations
  * @property null|list<array{id: string, name: array<Lang, string>, type: string}> $fittingLocations
  * @property list<int> $packageChildrenIds Ids of products that belong to this product. Empty when isPackage property is false.
  * @property list<string> $cacheTagsToInvalidate Cache tags of OLD entities that were attached to the product, but they are not anymore. Example: locations that were removed from the product.
  * @property array<Lang, string> $urlsPerLang
+ * @property array{equipment: array{lang: string, value: string}, duration: array{lang: string, value: string}, participants: array{lang: string, value: string}, weather: array{lang: string, value: string}} $legacyDetails
+ * @property array{
+ *      summary: list<array{lang: string, value: string}>,
+ *      location: list<array{lang: string, value: string}>,
+ *      participants: list<array{lang: string, value: string}>,
+ *      duration: list<array{lang: string, value: string}>,
+ *      equipment: list<array{lang: string, value: string}>,
+ *      weather: list<array{lang: string, value: string}>,
+ *      important: list<array{lang: string, value: string}>,
+ *      includes: list<array{lang: string, value: string}>,
+ *      process: list<array{lang: string, value: string}>,
+ *      additionalInfo: list<array{lang: string, value: string}>,
+ *      showAdditionalInfo: list<array{lang: string, value: bool}>
+ *  } $details
+ * @property list<array{id: int, price: float}> $priceVariants
  */
 final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInterface
 {
@@ -72,10 +88,16 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public bool $isDelivery,
         public float $qs,
         public array $packageChildrenIds = [],
+        public array $multigiftChildrenIds = [],
         public bool $isGlobal = false, // remove default value after migration period
         public array $cacheTagsToInvalidate = [],
         public array $urlsPerLang = [],
         public array $upsellProducts = [],
+        public string $supplier_logo = '',
+        public array $videos = [],
+        public array $priceVariants = [],
+        public array $legacyDetails = [],
+        public array $details = [],
     ) {}
 
     public static function routingName(): string
@@ -88,7 +110,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         return 1;
     }
 
-    public function resourceId(): ?int
+    public function resourceId(): int
     {
         return $this->id;
     }
