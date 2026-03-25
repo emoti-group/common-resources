@@ -11,7 +11,7 @@ use Ramsey\Uuid\UuidInterface;
 
 /**
  * @property list<array{lang: string, value: string}> $generalCategoryNames
- * @property list<array{externalId: int, price: float, priceBeforeDiscount: ?float, discountPercentage: ?float, type: string, value: array<string, string>, label: array<string, string>}> $upsellProducts
+ * @property list<array{externalId: int, urlPerLang: list<Lang, string>, price: float, priceBeforeDiscount: ?float, discountPercentage: ?float, type: string, value: array<string, string>, label: array<string, string>}> $upsellProducts
  * @property null|list<array{lang: string, value: string}> $parentGeneralCategoryNames
  * @property list<array{lang: string, value: string}> $titles
  * @property list<array{lang: string, value: string}> $descriptions
@@ -98,6 +98,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public array $priceVariants = [],
         public array $legacyDetails = [],
         public array $details = [],
+        public ?int $validity = null,
     ) {}
 
     public static function routingName(): string
