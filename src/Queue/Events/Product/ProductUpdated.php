@@ -39,6 +39,7 @@ use Ramsey\Uuid\UuidInterface;
  *      showAdditionalInfo: list<array{lang: string, value: bool}>
  *  } $details
  * @property list<array{id: int, price: float}> $priceVariants
+ * @property list<int> $recommendedProductIds
  */
 final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInterface
 {
@@ -99,6 +100,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public array $legacyDetails = [],
         public array $details = [],
         public ?int $validity = null,
+        public array $recommendedProductIds = []
     ) {}
 
     public static function routingName(): string
