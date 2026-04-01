@@ -100,7 +100,8 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public array $legacyDetails = [],
         public array $details = [],
         public ?int $validity = null,
-        public array $recommendedProductIds = []
+        public array $recommendedProductIds = [],
+        public float $lowestPrice30Days = 0.0,
     ) {}
 
     public static function routingName(): string
