@@ -21,14 +21,26 @@ final class PdfServiceClient implements PdfServiceInterface
     /**
      * @throws Exception
      */
-    public function transformHtmlToPdf(string $html, ?string $pageFormat = 'a5', array $options = []): BinaryFile
+    public function transformHtmlToPdf(
+        string $html,
+        ?string $pageFormat = 'a5',
+        array|PdfTransformOptions $options = [],
+    ): BinaryFile
     {
         try {
-            $queryParams = [
-                ...$options,
-                'optionsFormat' => $pageFormat,
-                'waitForContent' => true,
-            ];
+            if ($options instanceof PdfTransformOptions) {
+                $queryParams = [
+                    ...$options->toArray(),
+                    'optionsFormat' => $options->format ?? $pageFormat,
+                    'waitForContent' => true,
+                ];
+            } else {
+                $queryParams = [
+                    ...$options,
+                    'optionsFormat' => $pageFormat,
+                    'waitForContent' => true,
+                ];
+            }
             $query = http_build_query($queryParams);
 
             $result = $this->httpClient->post(
