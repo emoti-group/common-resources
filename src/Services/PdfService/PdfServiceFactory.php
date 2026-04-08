@@ -12,7 +12,7 @@ final class PdfServiceFactory
 
     public const DRIVER_CLOUDFLARE = 'cloudflare';
 
-    private static function createPdfService(string $baseUri): PdfServiceInterface
+    public static function createPdfService(string $baseUri): PdfServiceInterface
     {
         if ($baseUri === '') {
             throw new InvalidArgumentException('legacy.base_uri is required when driver is legacy.');
@@ -24,7 +24,7 @@ final class PdfServiceFactory
     /**
      * @param array<string, mixed> $defaultPdfOptions
      */
-    private static function createCloudflare(
+    public static function createCloudflare(
         string $accountId,
         string $token,
         array $defaultPdfOptions = [
