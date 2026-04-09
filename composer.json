@@ -17,7 +17,8 @@
     "open-telemetry/api": "^1.8",
     "open-telemetry/exporter-otlp": "^1.4",
     "open-telemetry/sdk": "^1.13",
-    "guzzlehttp/guzzle": "^7.8"
+    "guzzlehttp/guzzle": "^7.8",
+    "google/protobuf": "^4.33.6"
   },
   "require-dev": {
     "laravel/framework": "^12.0",
