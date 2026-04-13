@@ -13,6 +13,7 @@ volumes:
 services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -28,8 +29,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
   elasticsearch:
     image: elasticsearch:9.0.1
+    restart: unless-stopped
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -55,6 +58,7 @@ services:
 
   traefik:
     image: traefik:latest
+    restart: unless-stopped
     command:
       # Providers
       - "--providers.docker=true"
