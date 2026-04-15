@@ -15,6 +15,7 @@ use Ramsey\Uuid\UuidInterface;
  * @property null|list<array{lang: string, value: string}> $parentGeneralCategoryNames
  * @property list<array{lang: string, value: string}> $titles
  * @property list<array{lang: string, value: string}> $descriptions
+ * @property list<array{lang: string, value: string}> $seoDescriptions
  * @property list<string> $tags
  * @property null|array{average: float, reviewsCount: int, key: string} $rating
  * @property list<string> $pictures
@@ -102,6 +103,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?int $validity = null,
         public array $recommendedProductIds = [],
         public float $lowestPrice30Days = 0.0,
+        public array $seoDescriptions = [],
     ) {}
 
     public static function routingName(): string
