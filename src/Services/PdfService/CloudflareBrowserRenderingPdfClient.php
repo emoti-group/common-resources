@@ -8,6 +8,10 @@ use Emoti\CommonResources\Services\BinaryFile;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * HTML → PDF via Cloudflare Browser Rendering API.
@@ -17,6 +21,9 @@ use GuzzleHttp\Exception\GuzzleException;
 final class CloudflareBrowserRenderingPdfClient implements PdfServiceInterface
 {
     private const DEFAULT_API_BASE = 'https://api.cloudflare.com/client/v4';
+    /* @see https://developers.cloudflare.com/browser-run/limits/#workers-paid */
+    private const TIMEOUT_SECONDS = 60;
+    private const MAX_RETRIES = 3;
 
     private Client $httpClient;
 
@@ -33,7 +40,36 @@ final class CloudflareBrowserRenderingPdfClient implements PdfServiceInterface
         ?Client $httpClient = null,
         private string $apiBaseUri = self::DEFAULT_API_BASE,
     ) {
-        $this->httpClient = $httpClient ?? new Client();
+        $this->httpClient = $httpClient ?? new Client([
+            'timeout' => self::TIMEOUT_SECONDS,
+            'handler' => $this->createHandlerStack(),
+        ]);
+    }
+
+    private function createHandlerStack(): HandlerStack
+    {
+        $stack = HandlerStack::create();
+
+        $stack->push(Middleware::retry(
+            function (int $retries, Request $request, ?Response $response = null): bool {
+                if ($retries >= self::MAX_RETRIES) {
+                    return false;
+                }
+
+                return $response !== null && $response->getStatusCode() === 429;
+            },
+            function (int $retries, Response $response): int {
+                $retryAfter = $response->getHeaderLine('Retry-After');
+
+                if ($retryAfter !== '' && is_numeric($retryAfter)) {
+                    return (int) ((float) $retryAfter * 1000);
+                }
+
+                return (int) (1000 * 2 ** $retries);
+            },
+        ));
+
+        return $stack;
     }
 
     /**
