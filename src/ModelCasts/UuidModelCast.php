@@ -18,6 +18,10 @@ final class UuidModelCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): ?UuidInterface
     {
+        if ($value instanceof UuidInterface) {
+            return $value;
+        }
+
         return $value ? Uuid::fromString($value) : null;
     }
 
@@ -28,6 +32,10 @@ final class UuidModelCast implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): array
     {
+        $value = $value instanceof UuidInterface
+            ? $value->toString()
+            : $value;
+
         return [$key => $value];
     }
 }
