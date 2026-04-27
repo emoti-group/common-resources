@@ -13,10 +13,6 @@
     "php-amqplib/php-amqplib": "^3.7",
     "spatie/laravel-data": "^4.17",
     "ext-sockets": "*",
-    "posthog/posthog-php": "^3.7",
-    "open-telemetry/api": "^1.8",
-    "open-telemetry/exporter-otlp": "^1.4",
-    "open-telemetry/sdk": "^1.13",
     "guzzlehttp/guzzle": "^7.8",
     "google/protobuf": "^4.33.6"
   },
@@ -33,8 +29,7 @@
   },
   "config": {
     "allow-plugins": {
-      "php-http/discovery": true,
-      "tbachert/spi": true
+      "php-http/discovery": true
     }
   }
 }
