@@ -16,7 +16,7 @@ use Ramsey\Uuid\UuidInterface;
  * @property list<array{lang: string, value: string}> $titles
  * @property list<array{lang: string, value: string}> $descriptions
  * @property list<array{lang: string, value: string}> $seoDescriptions
- * @property list<array{lang: string, value: array{id: string, title: string, price: float, url: string}}> $variations
+ * @property list<array{lang: string, value: list<array{id: string, title: string, price: float, url: string}>}> $variations
  * @property list<string> $tags
  * @property null|array{average: float, reviewsCount: int, key: string} $rating
  * @property list<string> $pictures
