@@ -11,7 +11,7 @@ use Throwable;
 
 class ExternalQueueWork extends Command
 {
-    protected $signature = 'common-resources:queue-external:work';
+    protected $signature = 'common-resources:queue-external:work {queue}';
 
     public function handle(): void
     {
@@ -20,6 +20,7 @@ class ExternalQueueWork extends Command
 
         $consumer->consume(
             captureException: fn(Throwable $e) => report($e),
+            queueName: (string) $this->argument('queue'),
         );
     }
 }

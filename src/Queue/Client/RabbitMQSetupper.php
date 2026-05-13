@@ -19,24 +19,23 @@ final class RabbitMQSetupper
      * @return array{string, string}
      * @throws Exception
      */
-    public function setup(): array
+    public function setup(string $queueName): array
     {
-        $queueSuffix = Config::get('rabbitmq.external_queue');
-        $routingKeys = $this->getRoutingKeys();
-        [$exchangeName, $queueName] = $this->declareExchangeAndQueue($queueSuffix);
+        $routingKeys = $this->getRoutingKeys($queueName);
+        [$exchangeName, $declaredQueueName] = $this->declareExchangeAndQueue($queueName);
 
-        $bindingsFile = Storage::path('rabbitmq_bindings.json');
+        $bindingsFile = Storage::path('rabbitmq_bindings_' . $queueName . '.json');
         $previousRoutingKeys = $this->getPreviousBindings($bindingsFile);
 
-        $this->updateQueueBindings($queueName, $exchangeName, $routingKeys, $previousRoutingKeys);
+        $this->updateQueueBindings($declaredQueueName, $exchangeName, $routingKeys, $previousRoutingKeys);
         $this->updateBindingsFile($bindingsFile, $routingKeys);
 
-        return [$exchangeName, $queueName];
+        return [$exchangeName, $declaredQueueName];
     }
 
-    private function getRoutingKeys(): array
+    private function getRoutingKeys(string $queueName): array
     {
-        $routingKeys = collect(Config::get('bindings'))
+        $routingKeys = collect(Config::get('bindings.' . $queueName, []))
             ->keys()
             ->map(
             /** @param class-string $eventClass */
@@ -83,9 +82,5 @@ final class RabbitMQSetupper
         file_put_contents($bindingsFile, json_encode($routingKeys));
     }
 
-    private function closeConnections(): void
-    {
-        $this->client->channel->close();
-        $this->client->connection->close();
-    }
+
 }

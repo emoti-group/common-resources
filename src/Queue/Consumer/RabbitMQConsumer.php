@@ -37,11 +37,11 @@ final class RabbitMQConsumer implements ConsumerInterface
      * @param Closure(Exception): void $captureException
      * @throws Exception
      */
-    public function consume(Closure $captureException): void
+    public function consume(Closure $captureException, string $queueName): void
     {
         try {
-            [$exchangeName, $queueName] = (new RabbitMQSetupper($this->client))->setup();
-            $this->startQueueConsumer($queueName, $captureException);
+            [, $declaredQueueName] = (new RabbitMQSetupper($this->client))->setup($queueName);
+            $this->startQueueConsumer($declaredQueueName, $captureException, $queueName);
             $this->client->channel->consume();
         } catch (Throwable $e) {
             $captureException($e);
@@ -54,11 +54,11 @@ final class RabbitMQConsumer implements ConsumerInterface
     /**
      * @param Closure(Exception): void $captureException
      */
-    private function startQueueConsumer(string $queueName, Closure $captureException): void
+    private function startQueueConsumer(string $queueName, Closure $captureException, string $bindingsGroup): void
     {
-        $callback = function (AMQPMessage $AMQPMessage) use ($captureException) {
+        $callback = function (AMQPMessage $AMQPMessage) use ($captureException, $bindingsGroup) {
             try {
-                $event = $this->processTheMessage($AMQPMessage);
+                $event = $this->processTheMessage($AMQPMessage, $bindingsGroup);
                 $AMQPMessage->ack();
 
                 if ($event instanceof ExternalQueueRestartRequested) {
@@ -79,14 +79,14 @@ final class RabbitMQConsumer implements ConsumerInterface
         );
     }
 
-    private function processTheMessage(AMQPMessage $AMQPMessage): EmotiEventInterface
+    private function processTheMessage(AMQPMessage $AMQPMessage, string $bindingsGroup): EmotiEventInterface
     {
         $message = Message::fromJson($AMQPMessage->getBody());
 
         /** @var EmotiEventInterface $event */
         $event = $message->class::fromArray($message->content);
 
-        $listener = Config::get('bindings')[$event::class] ?? null;
+        $listener = Config::get('bindings.' . $bindingsGroup)[$event::class] ?? null;
 
         if ($listener) {
             /** @var EmotiListenerInterface $listenerInstance */
