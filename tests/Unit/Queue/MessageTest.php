@@ -33,4 +33,29 @@ final class MessageTest extends TestCase
         $this->assertSame(['id' => 42], $array['content']);
         $this->assertSame('MyEvent', $array['class']);
     }
+
+    public function test_default_priority_is_five(): void
+    {
+        $message = new Message(content: ['id' => 1], class: 'MyEvent');
+
+        $this->assertSame(5, $message->priority);
+    }
+
+    public function test_custom_priority_is_stored(): void
+    {
+        $message = new Message(content: ['id' => 1], class: 'MyEvent', priority: 9);
+
+        $this->assertSame(9, $message->priority);
+    }
+
+    public function test_priority_is_not_included_in_serialized_body(): void
+    {
+        $message = new Message(content: ['id' => 1], class: 'MyEvent', priority: 8);
+
+        $array = $message->toArray();
+        $json = json_decode($message->toJson(), true);
+
+        $this->assertArrayNotHasKey('priority', $array);
+        $this->assertArrayNotHasKey('priority', $json);
+    }
 }

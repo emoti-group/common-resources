@@ -15,6 +15,7 @@ final class Message
     public function __construct(
         public readonly array $content,
         public readonly string $class,
+        public readonly int $priority = 5,
     ) {}
 
     public function toArray(): array
