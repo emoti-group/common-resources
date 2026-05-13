@@ -14,5 +14,5 @@ interface ConsumerInterface
     /**
      * @param Closure(Exception): void $captureException
      */
-    public function consume(Closure $captureException): void;
+    public function consume(Closure $captureException, string $queueName): void;
 }

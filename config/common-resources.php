@@ -12,13 +12,11 @@ return [
     'project_name' => env('PROJECT_NAME'),
 
     /**
-     * Do not change the exchange and external_queue values.
+     * Do not change the exchange value.
      * Exchange is only one for each env (local.gifts, staging.gifts and production.gifts).
-     * The external_queue should be the same for each project, to easily identify which queue receives the external events.
      */
     'rabbitmq' => [
         'exchange' => 'gifts',
-        'external_queue' => 'external',
         'host' => env('RABBITMQ_HOST', 'common-resources-rabbitmq-1'),
         'port' => env('RABBITMQ_PORT', 5672),
         'user' => env('RABBITMQ_USER') ?? env('RABBITMQ_USERNAME') ?? 'dev',
@@ -26,13 +24,21 @@ return [
     ],
 
     /**
-     * The bindings are used to set to which events the project should listen to.
-     * If you specify at least one event here, then the RabbitMQ exchange will register that it should route this specific event to this project's external queue.
+     * Bindings define which events each named queue listens to and which listener handles them.
+     * Each key is a queue name — it becomes part of the RabbitMQ queue: {env}.{project_name}.{queue_name}
+     * Run a separate consumer process per queue:
+     *   php artisan common-resources:queue-external:work critical
+     *   php artisan common-resources:queue-external:work background_tasks
      *
-     * The keys are the event classes from the common-resources package.
-     * The values are the listener classes from the project.
+     * The keys inside each group are event classes from common-resources.
+     * The values are listener classes from the project.
      */
     'bindings' => [
-        // event::class => listener::class,
+        // 'critical' => [
+        //     SomeEvent::class => SomeEventListener::class,
+        // ],
+        // 'background_tasks' => [
+        //     AnotherEvent::class => AnotherEventListener::class,
+        // ],
     ],
 ];
