@@ -12,7 +12,7 @@ use Emoti\CommonResources\Queue\Publisher\RabbitMQPublisher;
 #[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 trait DispatchableTrait
 {
-    public function dispatch(Site $site): void
+    public function dispatch(Site $site, int $priority = 5): void
     {
         $publisher = new RabbitMQPublisher();
 
@@ -21,7 +21,7 @@ trait DispatchableTrait
         $this->setSendAt();
 
         $publisher->publish(
-            new Message($this->toArray(), static::class),
+            new Message($this->toArray(), static::class, $priority),
             $this->routingKey(),
         );
     }

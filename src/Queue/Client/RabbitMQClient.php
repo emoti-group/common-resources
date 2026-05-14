@@ -17,6 +17,7 @@ final class RabbitMQClient
 {
     use SingletonTrait;
 
+    private const MAX_PRIORITY = 10;
     public AbstractConnection $connection;
     public AMQPChannel $channel;
 
@@ -57,6 +58,7 @@ final class RabbitMQClient
             arguments: new AMQPTable([
                 'x-dead-letter-exchange' => '',
                 'x-dead-letter-routing-key' => $this->buildDeadLetterQueueName($queueSuffix),
+                'x-max-priority' => self::MAX_PRIORITY,
             ]),
         );
 
@@ -64,6 +66,9 @@ final class RabbitMQClient
             queue: $this->buildDeadLetterQueueName($queueSuffix),
             durable: true,
             auto_delete: false,
+            arguments: new AMQPTable([
+                'x-max-priority' => self::MAX_PRIORITY,
+            ])
         );
 
         return $queueName;

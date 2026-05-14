@@ -36,7 +36,7 @@ final class RabbitMQPublisher implements PublisherInterface
         $exchangeName = $this->client->declareExchange();
 
         $this->client->channel->basic_publish(
-            msg: new AMQPMessage($message->toJson()),
+            msg: new AMQPMessage($message->toJson(), ['priority' => $message->priority]),
             exchange: $exchangeName,
             routing_key: $routingKey,
         );
