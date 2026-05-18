@@ -104,6 +104,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?int $validity = null,
         public array $recommendedProductIds = [],
         public float $lowestPrice30Days = 0.0,
+        public ?int $remainingProductsInCampaign = null,
         public array $seoDescriptions = [],
         public array $variations = [],
     ) {}
