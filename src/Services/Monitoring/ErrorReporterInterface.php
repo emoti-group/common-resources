@@ -22,6 +22,19 @@ interface ErrorReporterInterface
     public const LEVEL_FATAL = 'fatal';
 
     /**
+     * Semantic breadcrumb types — this abstraction's own vocabulary, NOT a
+     * specific vendor's. Each implementation maps these to its provider's
+     * taxonomy and falls back to TYPE_DEFAULT for anything it does not support.
+     * Keep this set small and stable; add a case only when it is meaningful
+     * across monitoring vendors.
+     */
+    public const TYPE_DEFAULT = 'default';
+    public const TYPE_NAVIGATION = 'navigation';
+    public const TYPE_HTTP = 'http';
+    public const TYPE_USER = 'user';
+    public const TYPE_ERROR = 'error';
+
+    /**
      * @param array<string, mixed> $extras
      * @param array<string, string> $tags
      */
@@ -37,7 +50,7 @@ interface ErrorReporterInterface
         string $category = 'default',
         array $metadata = [],
         string $level = self::LEVEL_INFO,
-        string $type = 'default',
+        string $type = self::TYPE_DEFAULT,
     ): void;
 
     /**
