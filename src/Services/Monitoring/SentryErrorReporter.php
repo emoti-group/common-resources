@@ -54,11 +54,11 @@ final class SentryErrorReporter implements ErrorReporterInterface
         string $category = 'default',
         array $metadata = [],
         string $level = self::LEVEL_INFO,
-        string $type = 'default',
+        string $type = self::TYPE_DEFAULT,
     ): void {
         addBreadcrumb(new Breadcrumb(
             $this->toBreadcrumbLevel($level),
-            $type,
+            $this->toBreadcrumbType($type),
             $category,
             $message,
             $metadata,
@@ -101,6 +101,17 @@ final class SentryErrorReporter implements ErrorReporterInterface
             self::LEVEL_ERROR => Breadcrumb::LEVEL_ERROR,
             self::LEVEL_FATAL => Breadcrumb::LEVEL_FATAL,
             default => Breadcrumb::LEVEL_INFO,
+        };
+    }
+
+    private function toBreadcrumbType(string $type): string
+    {
+        return match ($type) {
+            self::TYPE_NAVIGATION => Breadcrumb::TYPE_NAVIGATION,
+            self::TYPE_HTTP => Breadcrumb::TYPE_HTTP,
+            self::TYPE_USER => Breadcrumb::TYPE_USER,
+            self::TYPE_ERROR => Breadcrumb::TYPE_ERROR,
+            default => Breadcrumb::TYPE_DEFAULT,
         };
     }
 }
