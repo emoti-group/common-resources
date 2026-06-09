@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Emoti\CommonResources\Services\Monitoring\SentryErrorReporter;
+
 return [
     /**
      * env, project_name and rabbitmq.external_queue are needed to build the queue and exchange names.
@@ -41,4 +43,12 @@ return [
         //     AnotherEvent::class => AnotherEventListener::class,
         // ],
     ],
+
+    /**
+     * The implementation bound to ErrorReporterInterface (used by the ErrorReporter facade).
+     * Defaults to Sentry. Override per-project to migrate a single repository to a
+     * different monitoring vendor without affecting the others — point this at any
+     * class implementing ErrorReporterInterface.
+     */
+    'error_reporter' => SentryErrorReporter::class,
 ];
