@@ -19,7 +19,7 @@ final class UuidModelCastTest extends TestCase
     {
         parent::setUp();
         $this->cast = new UuidModelCast();
-        $this->model = $this->createMock(Model::class);
+        $this->model = $this->createStub(Model::class);
     }
 
     public function test_get_converts_string_to_uuid_interface(): void
