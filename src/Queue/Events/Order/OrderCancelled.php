@@ -9,18 +9,17 @@ use Emoti\CommonResources\Queue\Events\AbstractEmotiEvent;
 use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
 use Ramsey\Uuid\UuidInterface;
 
-final class OrderPaid extends AbstractEmotiEvent implements EmotiEventInterface
+final class OrderCancelled extends AbstractEmotiEvent implements EmotiEventInterface
 {
     public function __construct(
         public int $id,
         public CommonSite $site,
         public bool $isB2b = false,
-        public int $eligibleAmountCents = 0,
     ) {}
 
     public static function routingName(): string
     {
-        return 'order.paid';
+        return 'order.cancelled';
     }
 
     public static function version(): int
