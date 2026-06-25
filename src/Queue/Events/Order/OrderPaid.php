@@ -16,6 +16,7 @@ final class OrderPaid extends AbstractEmotiEvent implements EmotiEventInterface
         public CommonSite $site,
         public bool $isB2b = false,
         public int $eligibleAmountCents = 0,
+        public ?string $orderUuid = null,
     ) {}
 
     public static function routingName(): string
