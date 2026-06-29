@@ -47,4 +47,38 @@ final class OrderCancelledTest extends TestCase
 
         $this->assertSame(42, $event->resourceId());
     }
+
+    public function test_round_trip_preserves_order_uuid(): void
+    {
+        $event = new OrderCancelled(
+            id: 99,
+            site: Site::PL,
+            isB2b: true,
+            orderUuid: '11111111-2222-3333-4444-555555555555',
+        );
+        $event->setSite(Site::PL);
+        $event->setEventId();
+        $event->setSendAt();
+
+        $restored = OrderCancelled::fromArray($event->toArray());
+
+        $this->assertSame('11111111-2222-3333-4444-555555555555', $restored->orderUuid);
+    }
+
+    public function test_from_array_defaults_order_uuid_to_null_when_absent(): void
+    {
+        // Simulates an "old" message produced before orderUuid existed.
+        $event = new OrderCancelled(id: 7, site: Site::PL);
+        $event->setSite(Site::PL);
+        $event->setEventId();
+        $event->setSendAt();
+
+        $array = $event->toArray();
+        unset($array['data']['orderUuid']);
+
+        $restored = OrderCancelled::fromArray($array);
+
+        $this->assertSame(7, $restored->id);
+        $this->assertNull($restored->orderUuid);
+    }
 }
