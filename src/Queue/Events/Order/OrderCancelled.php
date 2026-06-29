@@ -15,6 +15,7 @@ final class OrderCancelled extends AbstractEmotiEvent implements EmotiEventInter
         public int $id,
         public CommonSite $site,
         public bool $isB2b = false,
+        public ?string $orderUuid = null,
     ) {}
 
     public static function routingName(): string
