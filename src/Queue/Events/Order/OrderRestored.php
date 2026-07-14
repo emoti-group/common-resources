@@ -15,14 +15,16 @@ final class OrderRestored extends AbstractEmotiEvent implements EmotiEventInterf
         public bool $isB2b = false,
         public ?string $orderUuid = null,
         /**
-         * Payment status at restore time; consumers re-apply payment-axis
-         * effects only if true.
+         * Payment status at restore time — an unsequenced snapshot (guarded only
+         * by the existence-axis sequence; carries no payment sequence). Treat it
+         * as intent, applied idempotently and reconciled against the real
+         * OrderPaid/OrderCancelled events; a newer payment-axis event wins.
+         * See "Event sequencing" in docs/message-broker.md.
          */
         public bool $isPaid = false,
         /**
-         * agcore's per-order, per-axis (existence) monotonically increasing counter.
-         * 0 = unknown/unsequenced (backward-compatible default); consumers should
-         * treat 0 as "always apply", i.e. no staleness information available.
+         * Per-order, per-axis (existence) sequence: positive; 0 = unsequenced.
+         * See "Event sequencing" in docs/message-broker.md.
          */
         public int $sequence = 0,
     ) {}

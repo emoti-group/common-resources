@@ -6,6 +6,7 @@ namespace Tests\Unit\Queue\Events\Order;
 
 use Emoti\CommonResources\Enums\Site;
 use Emoti\CommonResources\Queue\Events\Order\OrderCancelled;
+use Emoti\CommonResources\Queue\Message;
 use PHPUnit\Framework\TestCase;
 
 final class OrderCancelledTest extends TestCase
@@ -153,5 +154,35 @@ final class OrderCancelledTest extends TestCase
             'sequence' => 5,
         ], $array['data']);
         $this->assertSame('order.cancelled.v1', $array['routingKey']);
+    }
+
+    public function test_message_json_round_trip_preserves_sequence_and_wire_shape(): void
+    {
+        // The riskiest compat surface is `sequence`, freshly added to this
+        // released event — exercise the real wire boundary (Message JSON), not
+        // just an in-memory array round trip.
+        $event = new OrderCancelled(
+            id: 99,
+            site: Site::PL,
+            isB2b: true,
+            orderUuid: '11111111-2222-3333-4444-555555555555',
+            sequence: 5,
+        );
+        $event->setSite(Site::PL);
+        $event->setEventId();
+        $event->setSendAt();
+
+        $json = (new Message($event->toArray(), OrderCancelled::class))->toJson();
+
+        // Pin the actual wire bytes: site is the enum *value* string, sequence an int.
+        $wire = json_decode($json, true)['content']['data'];
+        $this->assertSame('pl', $wire['site']);
+        $this->assertSame(5, $wire['sequence']);
+
+        $restored = OrderCancelled::fromArray(Message::fromJson($json)->content);
+
+        $this->assertSame(99, $restored->id);
+        $this->assertSame(Site::PL, $restored->site);
+        $this->assertSame(5, $restored->sequence);
     }
 }
