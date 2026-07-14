@@ -13,7 +13,7 @@ final class OrderRestoredTest extends TestCase
 {
     public function test_round_trip_preserves_constructor_fields(): void
     {
-        $event = new OrderRestored(id: 99, site: Site::PL, isB2b: true);
+        $event = new OrderRestored(id: 99, isB2b: true);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -21,13 +21,13 @@ final class OrderRestoredTest extends TestCase
         $restored = OrderRestored::fromArray($event->toArray());
 
         $this->assertSame(99, $restored->id);
-        $this->assertSame(Site::PL, $restored->site);
+        $this->assertSame(Site::PL, $restored->site());
         $this->assertTrue($restored->isB2b);
     }
 
     public function test_round_trip_preserves_non_b2b(): void
     {
-        $event = new OrderRestored(id: 1, site: Site::EE, isB2b: false);
+        $event = new OrderRestored(id: 1, isB2b: false);
         $event->setSite(Site::EE);
         $event->setEventId();
         $event->setSendAt();
@@ -49,7 +49,7 @@ final class OrderRestoredTest extends TestCase
 
     public function test_resource_id_returns_id(): void
     {
-        $event = new OrderRestored(id: 42, site: Site::PL, isB2b: false);
+        $event = new OrderRestored(id: 42, isB2b: false);
 
         $this->assertSame(42, $event->resourceId());
     }
@@ -58,7 +58,6 @@ final class OrderRestoredTest extends TestCase
     {
         $event = new OrderRestored(
             id: 99,
-            site: Site::PL,
             isB2b: true,
             orderUuid: '11111111-2222-3333-4444-555555555555',
         );
@@ -74,7 +73,7 @@ final class OrderRestoredTest extends TestCase
     public function test_from_array_defaults_order_uuid_to_null_when_absent(): void
     {
         // Simulates a message produced by an emitter without orderUuid support.
-        $event = new OrderRestored(id: 7, site: Site::PL);
+        $event = new OrderRestored(id: 7);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -90,14 +89,14 @@ final class OrderRestoredTest extends TestCase
 
     public function test_is_paid_defaults_to_false(): void
     {
-        $event = new OrderRestored(id: 7, site: Site::PL);
+        $event = new OrderRestored(id: 7);
 
         $this->assertFalse($event->isPaid);
     }
 
     public function test_round_trip_preserves_is_paid_true(): void
     {
-        $event = new OrderRestored(id: 99, site: Site::PL, isB2b: true, isPaid: true);
+        $event = new OrderRestored(id: 99, isB2b: true, isPaid: true);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -109,7 +108,7 @@ final class OrderRestoredTest extends TestCase
 
     public function test_round_trip_preserves_is_paid_false(): void
     {
-        $event = new OrderRestored(id: 99, site: Site::PL, isB2b: true, isPaid: false);
+        $event = new OrderRestored(id: 99, isB2b: true, isPaid: false);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -122,7 +121,7 @@ final class OrderRestoredTest extends TestCase
     public function test_from_array_defaults_is_paid_to_false_when_absent(): void
     {
         // Simulates a message produced by an emitter without isPaid support.
-        $event = new OrderRestored(id: 7, site: Site::PL);
+        $event = new OrderRestored(id: 7);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -138,14 +137,14 @@ final class OrderRestoredTest extends TestCase
 
     public function test_sequence_defaults_to_zero(): void
     {
-        $event = new OrderRestored(id: 7, site: Site::PL);
+        $event = new OrderRestored(id: 7);
 
         $this->assertSame(0, $event->sequence);
     }
 
     public function test_round_trip_preserves_non_zero_sequence(): void
     {
-        $event = new OrderRestored(id: 99, site: Site::PL, isB2b: true, isPaid: true, sequence: 5);
+        $event = new OrderRestored(id: 99, isB2b: true, isPaid: true, sequence: 5);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -158,7 +157,7 @@ final class OrderRestoredTest extends TestCase
     public function test_from_array_defaults_sequence_to_zero_when_absent(): void
     {
         // Simulates an "old" message produced before sequence existed (or a DLQ replay).
-        $event = new OrderRestored(id: 7, site: Site::PL);
+        $event = new OrderRestored(id: 7);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -179,7 +178,6 @@ final class OrderRestoredTest extends TestCase
         // round-trip tests kept passing.
         $event = new OrderRestored(
             id: 99,
-            site: Site::PL,
             isB2b: true,
             orderUuid: '11111111-2222-3333-4444-555555555555',
             isPaid: true,
@@ -197,7 +195,6 @@ final class OrderRestoredTest extends TestCase
         );
         $this->assertSame([
             'id' => 99,
-            'site' => Site::PL,
             'isB2b' => true,
             'orderUuid' => '11111111-2222-3333-4444-555555555555',
             'isPaid' => true,
@@ -212,7 +209,6 @@ final class OrderRestoredTest extends TestCase
         // a PHP-array round trip.
         $event = new OrderRestored(
             id: 99,
-            site: Site::PL,
             isB2b: true,
             orderUuid: '11111111-2222-3333-4444-555555555555',
             isPaid: true,
@@ -229,7 +225,7 @@ final class OrderRestoredTest extends TestCase
         $restored = OrderRestored::fromArray($message->content);
 
         $this->assertSame(99, $restored->id);
-        $this->assertSame(Site::PL, $restored->site);
+        $this->assertSame(Site::PL, $restored->site());
         $this->assertTrue($restored->isB2b);
         $this->assertSame('11111111-2222-3333-4444-555555555555', $restored->orderUuid);
         $this->assertTrue($restored->isPaid);

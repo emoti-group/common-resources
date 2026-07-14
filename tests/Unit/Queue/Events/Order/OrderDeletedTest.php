@@ -13,7 +13,7 @@ final class OrderDeletedTest extends TestCase
 {
     public function test_round_trip_preserves_constructor_fields(): void
     {
-        $event = new OrderDeleted(id: 99, site: Site::PL, isB2b: true);
+        $event = new OrderDeleted(id: 99, isB2b: true);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -21,13 +21,13 @@ final class OrderDeletedTest extends TestCase
         $restored = OrderDeleted::fromArray($event->toArray());
 
         $this->assertSame(99, $restored->id);
-        $this->assertSame(Site::PL, $restored->site);
+        $this->assertSame(Site::PL, $restored->site());
         $this->assertTrue($restored->isB2b);
     }
 
     public function test_round_trip_preserves_non_b2b(): void
     {
-        $event = new OrderDeleted(id: 1, site: Site::EE, isB2b: false);
+        $event = new OrderDeleted(id: 1, isB2b: false);
         $event->setSite(Site::EE);
         $event->setEventId();
         $event->setSendAt();
@@ -49,7 +49,7 @@ final class OrderDeletedTest extends TestCase
 
     public function test_resource_id_returns_id(): void
     {
-        $event = new OrderDeleted(id: 42, site: Site::PL, isB2b: false);
+        $event = new OrderDeleted(id: 42, isB2b: false);
 
         $this->assertSame(42, $event->resourceId());
     }
@@ -58,7 +58,6 @@ final class OrderDeletedTest extends TestCase
     {
         $event = new OrderDeleted(
             id: 99,
-            site: Site::PL,
             isB2b: true,
             orderUuid: '11111111-2222-3333-4444-555555555555',
         );
@@ -74,7 +73,7 @@ final class OrderDeletedTest extends TestCase
     public function test_from_array_defaults_order_uuid_to_null_when_absent(): void
     {
         // Simulates an "old" message produced before orderUuid existed.
-        $event = new OrderDeleted(id: 7, site: Site::PL);
+        $event = new OrderDeleted(id: 7);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -90,14 +89,14 @@ final class OrderDeletedTest extends TestCase
 
     public function test_sequence_defaults_to_zero(): void
     {
-        $event = new OrderDeleted(id: 7, site: Site::PL);
+        $event = new OrderDeleted(id: 7);
 
         $this->assertSame(0, $event->sequence);
     }
 
     public function test_round_trip_preserves_non_zero_sequence(): void
     {
-        $event = new OrderDeleted(id: 99, site: Site::PL, isB2b: true, sequence: 5);
+        $event = new OrderDeleted(id: 99, isB2b: true, sequence: 5);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -110,7 +109,7 @@ final class OrderDeletedTest extends TestCase
     public function test_from_array_defaults_sequence_to_zero_when_absent(): void
     {
         // Simulates an "old" message produced before sequence existed (or a DLQ replay).
-        $event = new OrderDeleted(id: 7, site: Site::PL);
+        $event = new OrderDeleted(id: 7);
         $event->setSite(Site::PL);
         $event->setEventId();
         $event->setSendAt();
@@ -131,7 +130,6 @@ final class OrderDeletedTest extends TestCase
         // round-trip tests kept passing.
         $event = new OrderDeleted(
             id: 99,
-            site: Site::PL,
             isB2b: true,
             orderUuid: '11111111-2222-3333-4444-555555555555',
             sequence: 5,
@@ -148,7 +146,6 @@ final class OrderDeletedTest extends TestCase
         );
         $this->assertSame([
             'id' => 99,
-            'site' => Site::PL,
             'isB2b' => true,
             'orderUuid' => '11111111-2222-3333-4444-555555555555',
             'sequence' => 5,
@@ -162,7 +159,6 @@ final class OrderDeletedTest extends TestCase
         // a PHP-array round trip.
         $event = new OrderDeleted(
             id: 99,
-            site: Site::PL,
             isB2b: true,
             orderUuid: '11111111-2222-3333-4444-555555555555',
             sequence: 5,
@@ -178,7 +174,7 @@ final class OrderDeletedTest extends TestCase
         $restored = OrderDeleted::fromArray($message->content);
 
         $this->assertSame(99, $restored->id);
-        $this->assertSame(Site::PL, $restored->site);
+        $this->assertSame(Site::PL, $restored->site());
         $this->assertTrue($restored->isB2b);
         $this->assertSame('11111111-2222-3333-4444-555555555555', $restored->orderUuid);
         $this->assertSame(5, $restored->sequence);
