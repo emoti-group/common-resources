@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Events\Order;
 
-use Emoti\CommonResources\Enums\Site as CommonSite;
 use Emoti\CommonResources\Queue\Events\AbstractEmotiEvent;
 use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
 use Ramsey\Uuid\UuidInterface;
 
-final class OrderCancelled extends AbstractEmotiEvent implements EmotiEventInterface
+final class OrderDeleted extends AbstractEmotiEvent implements EmotiEventInterface
 {
     public function __construct(
         public int $id,
-        public CommonSite $site,
         public bool $isB2b = false,
         public ?string $orderUuid = null,
         /**
-         * Per-order, per-axis (payment) sequence: positive; 0 = unsequenced.
+         * Per-order, per-axis (existence) sequence: positive; 0 = unsequenced.
          * See "Event sequencing" in docs/message-broker.md.
          */
         public int $sequence = 0,
@@ -25,7 +23,7 @@ final class OrderCancelled extends AbstractEmotiEvent implements EmotiEventInter
 
     public static function routingName(): string
     {
-        return 'order.cancelled';
+        return 'order.deleted';
     }
 
     public static function version(): int

@@ -17,6 +17,11 @@ final class OrderPaid extends AbstractEmotiEvent implements EmotiEventInterface
         public bool $isB2b = false,
         public int $eligibleAmountCents = 0,
         public ?string $orderUuid = null,
+        /**
+         * Per-order, per-axis (payment) sequence: positive; 0 = unsequenced.
+         * See "Event sequencing" in docs/message-broker.md.
+         */
+        public int $sequence = 0,
     ) {}
 
     public static function routingName(): string

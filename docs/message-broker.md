@@ -145,3 +145,56 @@ $event = new ProductAddedToUpsellGroup(
 );
 $event->dispatch($site);
 ```
+
+## Event sequencing (order lifecycle)
+
+The RabbitMQ transport is at-least-once: an event can be redelivered (consumer
+scale-out, DLQ replay, nacks). For most events that is harmless, but the order
+lifecycle events (`OrderPaid`, `OrderCancelled`, `OrderDeleted`, `OrderRestored`)
+each undo an earlier one, so a **stale redelivery arriving after its inverse**
+would otherwise re-apply an effect that has already been reversed. The `sequence`
+field lets consumers drop those.
+
+### Two independent axes
+
+An order has two orthogonal, independently reversible states, each with its own
+counter — an event on one axis says nothing about the other:
+
+| Axis | Events | Meaning |
+|------|--------|---------|
+| **Payment** | `OrderPaid` / `OrderCancelled` | order is paid / marked unpaid |
+| **Existence** | `OrderRestored` / `OrderDeleted` | order exists / is deleted |
+
+The producer (agcore) keeps one monotonic counter **per order, per axis** and
+stamps every event with the next value on its axis. Counters survive
+delete/undelete.
+
+### The contract
+
+- `sequence` is a **positive** integer. `0` is the sentinel for
+  *unsequenced / unknown* — emitted by producers predating the field, or by
+  replayed old messages. Negative values are out of contract.
+- A consumer keeps, **per order and per axis**, the highest `sequence` it has
+  applied (its watermark), and **drops any event whose `sequence` is
+  strictly-older than that watermark** ("drop strictly-older"). An event with
+  `sequence = 0` is always applied — there is no staleness information to compare.
+- Because the two axes have separate counters, staleness is judged
+  **within an axis only**: an `OrderDeleted` (existence) is never compared
+  against an `OrderPaid` (payment) watermark.
+
+### `OrderRestored.isPaid` is an unsequenced snapshot
+
+`OrderRestored` carries `isPaid` — the order's payment status *at restore time* —
+so a consumer can reconcile the earn (payment-axis) effect on undelete without
+waiting for a separate `OrderPaid`. But `isPaid` is only a **snapshot guarded by
+the existence-axis `sequence`**; it carries **no payment-axis sequence**. A
+consumer must therefore treat it as intent, not as an authoritative payment-axis
+event: apply it idempotently and let a subsequent real `OrderPaid` /
+`OrderCancelled` (with its own payment `sequence`) be the source of truth for the
+payment axis. Do not let an `isPaid` snapshot override a newer payment-axis event.
+
+### Operational requirements
+
+- The order-lifecycle queue **must have exactly one consumer** (single writer per
+  order), and the **DLQ must not be blind-replayed** — the per-axis sequence makes
+  a stale replay *safe to drop*, not free to reorder against a live newer event.
