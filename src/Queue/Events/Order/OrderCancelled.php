@@ -16,6 +16,12 @@ final class OrderCancelled extends AbstractEmotiEvent implements EmotiEventInter
         public CommonSite $site,
         public bool $isB2b = false,
         public ?string $orderUuid = null,
+        /**
+         * agcore's per-order, per-axis (payment) monotonically increasing counter.
+         * 0 = unknown/unsequenced (backward-compatible default); consumers should
+         * treat 0 as "always apply", i.e. no staleness information available.
+         */
+        public int $sequence = 0,
     ) {}
 
     public static function routingName(): string

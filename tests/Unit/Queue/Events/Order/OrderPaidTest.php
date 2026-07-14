@@ -66,10 +66,90 @@ final class OrderPaidTest extends TestCase
         $this->assertSame(Site::EE, $event->site());
     }
 
+    public function test_routing_name_is_order_paid(): void
+    {
+        $this->assertSame('order.paid', OrderPaid::routingName());
+    }
+
+    public function test_version_is_one(): void
+    {
+        $this->assertSame(1, OrderPaid::version());
+    }
+
     public function test_resource_id_returns_id(): void
     {
         $event = new OrderPaid(id: 42, site: Site::PL, isB2b: false, eligibleAmountCents: 0);
 
         $this->assertSame(42, $event->resourceId());
+    }
+
+    public function test_sequence_defaults_to_zero(): void
+    {
+        $event = new OrderPaid(id: 7, site: Site::PL);
+
+        $this->assertSame(0, $event->sequence);
+    }
+
+    public function test_round_trip_preserves_non_zero_sequence(): void
+    {
+        $event = new OrderPaid(id: 99, site: Site::PL, isB2b: true, eligibleAmountCents: 8000, sequence: 5);
+        $event->setSite(Site::PL);
+        $event->setEventId();
+        $event->setSendAt();
+
+        $restored = OrderPaid::fromArray($event->toArray());
+
+        $this->assertSame(5, $restored->sequence);
+    }
+
+    public function test_from_array_defaults_sequence_to_zero_when_absent(): void
+    {
+        // Simulates an "old" message produced before sequence existed (or a DLQ replay).
+        $event = new OrderPaid(id: 7, site: Site::PL);
+        $event->setSite(Site::PL);
+        $event->setEventId();
+        $event->setSendAt();
+
+        $array = $event->toArray();
+        unset($array['data']['sequence']);
+
+        $restored = OrderPaid::fromArray($array);
+
+        $this->assertSame(7, $restored->id);
+        $this->assertSame(0, $restored->sequence);
+    }
+
+    public function test_to_array_pins_wire_format(): void
+    {
+        // Under the reflection-based ArrayableTrait the property names ARE the
+        // wire keys: renaming a property would break consumers while object
+        // round-trip tests kept passing.
+        $event = new OrderPaid(
+            id: 99,
+            site: Site::PL,
+            isB2b: true,
+            eligibleAmountCents: 8000,
+            orderUuid: '11111111-2222-3333-4444-555555555555',
+            sequence: 5,
+        );
+        $event->setSite(Site::PL);
+        $event->setEventId();
+        $event->setSendAt();
+
+        $array = $event->toArray();
+
+        $this->assertSame(
+            ['site', 'sendAt', 'data', 'resourceId', 'resourceUuid', 'version', 'eventId', 'routingKey'],
+            array_keys($array),
+        );
+        $this->assertSame([
+            'id' => 99,
+            'site' => Site::PL,
+            'isB2b' => true,
+            'eligibleAmountCents' => 8000,
+            'orderUuid' => '11111111-2222-3333-4444-555555555555',
+            'sequence' => 5,
+        ], $array['data']);
+        $this->assertSame('order.paid.v1', $array['routingKey']);
     }
 }
