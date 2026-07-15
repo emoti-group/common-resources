@@ -96,7 +96,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public array $cacheTagsToInvalidate = [],
         public array $urlsPerLang = [],
         public array $upsellProducts = [],
-        public string $supplier_logo = '',
+        public ?string $supplier_logo = null,
         public array $videos = [],
         public array $priceVariants = [],
         public array $legacyDetails = [],
