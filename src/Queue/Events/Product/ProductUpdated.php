@@ -22,6 +22,7 @@ use Ramsey\Uuid\UuidInterface;
  * @property list<string> $pictures
  * @property list<string> $videos
  * @property null|list<array{lat: float, long: float, city: string}> $locations
+ * @property list<array{lat: float, long: float, address: list<array{lang: string, value: string}>}> $legacyLocations
  * @property null|list<array{id: string, name: array<Lang, string>, type: string}> $fittingLocations
  * @property list<int> $packageChildrenIds Ids of products that belong to this product. Empty when isPackage property is false.
  * @property list<string> $cacheTagsToInvalidate Cache tags of OLD entities that were attached to the product, but they are not anymore. Example: locations that were removed from the product.
@@ -107,6 +108,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?int $remainingProductsInCampaign = null,
         public array $seoDescriptions = [],
         public array $variations = [],
+        public array $legacyLocations = [],
     ) {}
 
     public static function routingName(): string
