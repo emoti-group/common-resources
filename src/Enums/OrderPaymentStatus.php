@@ -16,14 +16,15 @@ namespace Emoti\CommonResources\Enums;
 enum OrderPaymentStatus: string
 {
     case SUCCESS = 'success';
-    case DELAYED = 'delayed';
+    case UNSETTLED = 'unsettled';
     case NONE = 'none';
 
     /**
      * Whether this state forbids a new payment for the order.
      *
-     * SUCCESS is a charge. DELAYED is an unsettled charge: the customer committed and the provider
-     * confirms later, so the order can still become paid.
+     * SUCCESS is a charge. UNSETTLED is a charge the provider has not confirmed: the customer
+     * committed, so the order can still become paid. The name describes the state rather than any
+     * one provider's word for it — a gateway may collapse several of its own statuses onto it.
      *
      * A payment that only reached the provider's page is not reported at all. Most gateways mark
      * such a payment as being in progress when they hand out the redirect url, before the customer
@@ -33,7 +34,7 @@ enum OrderPaymentStatus: string
     public function blocksRetry(): bool
     {
         return match ($this) {
-            self::SUCCESS, self::DELAYED => true,
+            self::SUCCESS, self::UNSETTLED => true,
             self::NONE => false,
         };
     }
