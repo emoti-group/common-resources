@@ -155,15 +155,20 @@ each undo an earlier one, so a **stale redelivery arriving after its inverse**
 would otherwise re-apply an effect that has already been reversed. The `sequence`
 field lets consumers drop those.
 
-### Two independent axes
+`OrderReturnsChanged` needs the same protection for a different reason: it has no
+inverse event, but it is cumulative, so a stale redelivery carrying a *smaller*
+returned share would drag a consumer's target backwards.
 
-An order has two orthogonal, independently reversible states, each with its own
-counter — an event on one axis says nothing about the other:
+### Three independent axes
+
+An order has three orthogonal states, each with its own counter — an event on one
+axis says nothing about the others:
 
 | Axis | Events | Meaning |
 |------|--------|---------|
 | **Payment** | `OrderPaid` / `OrderCancelled` | order is paid / marked unpaid |
 | **Existence** | `OrderRestored` / `OrderDeleted` | order exists / is deleted |
+| **Return** | `OrderReturnsChanged` | State-carrying: each event describes the order's cumulative returned share after the change. agcore refuses to publish without a stamped sequence, so this axis never emits `sequence = 0`. |
 
 The producer (agcore) keeps one monotonic counter **per order, per axis** and
 stamps every event with the next value on its axis. Counters survive
@@ -178,7 +183,7 @@ delete/undelete.
   applied (its watermark), and **drops any event whose `sequence` is
   strictly-older than that watermark** ("drop strictly-older"). An event with
   `sequence = 0` is always applied — there is no staleness information to compare.
-- Because the two axes have separate counters, staleness is judged
+- Because the three axes have separate counters, staleness is judged
   **within an axis only**: an `OrderDeleted` (existence) is never compared
   against an `OrderPaid` (payment) watermark.
 
