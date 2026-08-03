@@ -6,6 +6,7 @@ namespace Tests\Unit\Queue\Events\Order;
 
 use Emoti\CommonResources\Enums\Site;
 use Emoti\CommonResources\Queue\Events\Order\OrderReturnsChanged;
+use Emoti\CommonResources\Queue\Message;
 use PHPUnit\Framework\TestCase;
 
 final class OrderReturnsChangedTest extends TestCase
@@ -18,8 +19,12 @@ final class OrderReturnsChangedTest extends TestCase
             id: $overrides['id'] ?? 4321,
             site: $site,
             isB2b: $overrides['isB2b'] ?? false,
+            // The loyalty-discount pair and the eligible-amount pair are kept at
+            // clearly different magnitudes throughout this file (never all four
+            // equal) so a bug that transposes the two pairs fails visibly instead
+            // of the coincidence masking it.
             returnedLoyaltyDiscountCents: $overrides['returnedLoyaltyDiscountCents'] ?? 3333,
-            orderLoyaltyDiscountCents: $overrides['orderLoyaltyDiscountCents'] ?? 10000,
+            orderLoyaltyDiscountCents: $overrides['orderLoyaltyDiscountCents'] ?? 8800,
             returnedEligibleAmountCents: $overrides['returnedEligibleAmountCents'] ?? 2500,
             orderEligibleAmountCents: $overrides['orderEligibleAmountCents'] ?? 10000,
             // array_key_exists, not `??` — an explicit null must reach the payload.
@@ -63,7 +68,7 @@ final class OrderReturnsChangedTest extends TestCase
         $this->assertSame(Site::PL, $restored->site);
         $this->assertFalse($restored->isB2b);
         $this->assertSame(3333, $restored->returnedLoyaltyDiscountCents);
-        $this->assertSame(10000, $restored->orderLoyaltyDiscountCents);
+        $this->assertSame(8800, $restored->orderLoyaltyDiscountCents);
         $this->assertSame(2500, $restored->returnedEligibleAmountCents);
         $this->assertSame(10000, $restored->orderEligibleAmountCents);
         $this->assertSame('aaaa1111-bbbb-2222-cccc-333344445555', $restored->orderUuid);
@@ -80,7 +85,7 @@ final class OrderReturnsChangedTest extends TestCase
                 'site' => Site::PL,
                 'isB2b' => false,
                 'returnedLoyaltyDiscountCents' => 3333,
-                'orderLoyaltyDiscountCents' => 10000,
+                'orderLoyaltyDiscountCents' => 8800,
                 'returnedEligibleAmountCents' => 2500,
                 'orderEligibleAmountCents' => 10000,
                 'orderUuid' => 'aaaa1111-bbbb-2222-cccc-333344445555',
@@ -130,21 +135,42 @@ final class OrderReturnsChangedTest extends TestCase
 
     public function test_message_json_round_trip_preserves_fields(): void
     {
-        $json = json_encode($this->make()->toArray(), JSON_THROW_ON_ERROR);
-        $restored = OrderReturnsChanged::fromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        // Exercise the real wire boundary (the Message envelope), not just an
+        // in-memory array round trip — mirrors OrderPaidTest's sibling test.
+        $event = $this->make();
+
+        $json = (new Message($event->toArray(), OrderReturnsChanged::class))->toJson();
+
+        // Pin the actual wire bytes: site is the enum *value* string.
+        $wire = json_decode($json, true)['content']['data'];
+        $this->assertSame('pl', $wire['site']);
+        $this->assertSame(7, $wire['sequence']);
+
+        $restored = OrderReturnsChanged::fromArray(Message::fromJson($json)->content);
 
         $this->assertSame(4321, $restored->id);
+        $this->assertSame(Site::PL, $restored->site);
         $this->assertSame(7, $restored->sequence);
-        $this->assertSame('pl', $restored->site->value);
     }
 
     public function test_a_fully_returned_order_closes_both_pairs_exactly(): void
     {
         // There is no full-return flag: equality of the integer sums is the signal.
+        // The two pairs use clearly different magnitudes (and differ from the
+        // `make()` defaults) so a bug that transposes the loyalty-discount pair
+        // with the eligible-amount pair — whether field-for-field or pair-for-pair
+        // — fails visibly instead of the coincidence masking it.
         $restored = OrderReturnsChanged::fromArray($this->make([
-            'returnedLoyaltyDiscountCents' => 10000,
-            'returnedEligibleAmountCents' => 10000,
+            'returnedLoyaltyDiscountCents' => 6000,
+            'orderLoyaltyDiscountCents' => 6000,
+            'returnedEligibleAmountCents' => 15000,
+            'orderEligibleAmountCents' => 15000,
         ])->toArray());
+
+        $this->assertSame(6000, $restored->orderLoyaltyDiscountCents);
+        $this->assertSame(6000, $restored->returnedLoyaltyDiscountCents);
+        $this->assertSame(15000, $restored->orderEligibleAmountCents);
+        $this->assertSame(15000, $restored->returnedEligibleAmountCents);
 
         $this->assertSame($restored->orderLoyaltyDiscountCents, $restored->returnedLoyaltyDiscountCents);
         $this->assertSame($restored->orderEligibleAmountCents, $restored->returnedEligibleAmountCents);
