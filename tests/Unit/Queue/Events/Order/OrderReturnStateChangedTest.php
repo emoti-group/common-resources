@@ -17,7 +17,6 @@ final class OrderReturnStateChangedTest extends TestCase
 
         $event = new OrderReturnStateChanged(
             id: $overrides['id'] ?? 4321,
-            site: $site,
             isB2b: $overrides['isB2b'] ?? false,
             // The loyalty-discount pair and the eligible-amount pair are kept at
             // clearly different magnitudes throughout this file (never all four
@@ -33,8 +32,10 @@ final class OrderReturnStateChangedTest extends TestCase
                 : 'aaaa1111-bbbb-2222-cccc-333344445555',
             sequence: $overrides['sequence'] ?? 7,
         );
-        // No setSite(): the constructor's promoted $site IS the property
-        // ExtraPropertiesTrait exposes, so setting it again is dead code.
+        // setSite() is REQUIRED, not decoration: `site` is not a constructor
+        // parameter, so the envelope copy is the only place it lives. dispatch()
+        // does this in production.
+        $event->setSite($site);
         $event->setEventId();
         $event->setSendAt();
 
@@ -66,7 +67,9 @@ final class OrderReturnStateChangedTest extends TestCase
         $restored = OrderReturnStateChanged::fromArray($this->make()->toArray());
 
         $this->assertSame(4321, $restored->id);
-        $this->assertSame(Site::PL, $restored->site);
+        // site() not ->site: with `site` out of the constructor it is the trait's
+        // protected property, reachable only through the accessor.
+        $this->assertSame(Site::PL, $restored->site());
         $this->assertFalse($restored->isB2b);
         $this->assertSame(3333, $restored->returnedLoyaltyDiscountCents);
         $this->assertSame(8800, $restored->orderLoyaltyDiscountCents);
@@ -88,12 +91,12 @@ final class OrderReturnStateChangedTest extends TestCase
         );
         $this->assertSame('order.returns_changed.v1', $array['routingKey']);
 
-        // `data` mirrors the constructor parameters in order, and `site` appears
-        // here as the ENUM INSTANCE — only the envelope copy is stringified.
+        // `data` mirrors the constructor parameters in order. `site` is absent by
+        // design: it lives at envelope level only, which is why the round-trip
+        // below still restores it.
         $this->assertSame(
             [
                 'id' => 4321,
-                'site' => Site::PL,
                 'isB2b' => false,
                 'returnedLoyaltyDiscountCents' => 3333,
                 'orderLoyaltyDiscountCents' => 8800,
@@ -110,7 +113,7 @@ final class OrderReturnStateChangedTest extends TestCase
     {
         // Distinct from the fromArray() default below: this is the CONSTRUCTOR's
         // default, which is what a producer that forgets to stamp one would send.
-        $event = new OrderReturnStateChanged(id: 4321, site: Site::PL);
+        $event = new OrderReturnStateChanged(id: 4321);
 
         $this->assertSame(0, $event->sequence);
     }
@@ -140,7 +143,7 @@ final class OrderReturnStateChangedTest extends TestCase
         $array = $this->make(['site' => Site::EE])->toArray();
         $array['data'] = ['id' => 4321];
 
-        $this->assertSame(Site::EE, OrderReturnStateChanged::fromArray($array)->site);
+        $this->assertSame(Site::EE, OrderReturnStateChanged::fromArray($array)->site());
     }
 
     public function test_b2b_flag_round_trips(): void
@@ -161,15 +164,17 @@ final class OrderReturnStateChangedTest extends TestCase
 
         $json = (new Message($event->toArray(), OrderReturnStateChanged::class))->toJson();
 
-        // Pin the actual wire bytes: site is the enum *value* string.
-        $wire = json_decode($json, true)['content']['data'];
-        $this->assertSame('pl', $wire['site']);
-        $this->assertSame(7, $wire['sequence']);
+        // Pin the actual wire bytes. `site` is stringified at ENVELOPE level and is
+        // absent from `data`; the payload figures live in `data`.
+        $content = json_decode($json, true)['content'];
+        $this->assertSame('pl', $content['site']);
+        $this->assertArrayNotHasKey('site', $content['data']);
+        $this->assertSame(7, $content['data']['sequence']);
 
         $restored = OrderReturnStateChanged::fromArray(Message::fromJson($json)->content);
 
         $this->assertSame(4321, $restored->id);
-        $this->assertSame(Site::PL, $restored->site);
+        $this->assertSame(Site::PL, $restored->site());
         $this->assertSame(7, $restored->sequence);
     }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Emoti\CommonResources\Queue\Events\Order;
 
-use Emoti\CommonResources\Enums\Site as CommonSite;
 use Emoti\CommonResources\Queue\Events\AbstractEmotiEvent;
 use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
 use Ramsey\Uuid\UuidInterface;
@@ -57,14 +56,14 @@ use Ramsey\Uuid\UuidInterface;
  *
  * Every OPTIONAL field carries a default, because ArrayableTrait::fromArray()
  * leaves a missing non-nullable typed property UNINITIALIZED, which throws on
- * first read. `id` and `site` are required and always sent; `site` additionally
- * travels at envelope level and is restored from there.
+ * first read. `id` is the only required field. `site` is deliberately NOT a constructor
+ * parameter: AbstractEmotiEvent already carries it, `dispatch()` stamps it, and
+ * `fromArray()` restores it from the envelope — see the note in CLAUDE.md.
  */
 final class OrderReturnStateChanged extends AbstractEmotiEvent implements EmotiEventInterface
 {
     public function __construct(
         public int $id,
-        public CommonSite $site,
         public bool $isB2b = false,
         /** Σ per-line loyalty attribution of the returned lines, live ∪ archived. */
         public int $returnedLoyaltyDiscountCents = 0,
