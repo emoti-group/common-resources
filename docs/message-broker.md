@@ -168,7 +168,7 @@ axis says nothing about the others:
 |------|--------|---------|
 | **Payment** | `OrderPaid` / `OrderCancelled` | order is paid / marked unpaid |
 | **Existence** | `OrderRestored` / `OrderDeleted` | order exists / is deleted |
-| **Return** | `OrderReturnsChanged` | State-carrying: each event describes the order's cumulative returned share after the change. agcore refuses to publish without a stamped sequence, so this axis never emits `sequence = 0`. |
+| **Return** | `OrderReturnsChanged` | cumulative returned share of the order |
 
 The producer (agcore) keeps one monotonic counter **per order, per axis** and
 stamps every event with the next value on its axis. Counters survive
@@ -186,6 +186,14 @@ delete/undelete.
 - Because the three axes have separate counters, staleness is judged
   **within an axis only**: an `OrderDeleted` (existence) is never compared
   against an `OrderPaid` (payment) watermark.
+- **The return axis is the one exception to "`sequence = 0` is always applied", and it
+  is the consumer's rule to enforce.** Its payload is cumulative, so an unsequenced
+  event cannot be ordered against the watermark at all — applying one would let a
+  message carrying a smaller total overwrite a larger, already-correct one. A consumer
+  on this axis must therefore **refuse** an event with `sequence < 1` rather than apply
+  it. The producer is expected never to emit one (agcore declines to publish when it
+  cannot stamp a sequence), but the consumer does not rely on that: `fromArray()`
+  defaults a missing `sequence` to 0, so 0 is reachable and must be handled.
 
 ### `OrderRestored.isPaid` is an unsequenced snapshot
 

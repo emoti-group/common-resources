@@ -33,7 +33,8 @@ final class OrderReturnsChangedTest extends TestCase
                 : 'aaaa1111-bbbb-2222-cccc-333344445555',
             sequence: $overrides['sequence'] ?? 7,
         );
-        $event->setSite($site);
+        // No setSite(): the constructor's promoted $site IS the property
+        // ExtraPropertiesTrait exposes, so setting it again is dead code.
         $event->setEventId();
         $event->setSendAt();
 
@@ -77,6 +78,16 @@ final class OrderReturnsChangedTest extends TestCase
 
     public function test_to_array_pins_wire_format(): void
     {
+        $array = $this->make()->toArray();
+
+        // The envelope's own keys, in order — a consumer reads `data` out of this
+        // shape, so a change here is a wire change even if `data` is untouched.
+        $this->assertSame(
+            ['site', 'sendAt', 'data', 'resourceId', 'resourceUuid', 'version', 'eventId', 'routingKey'],
+            array_keys($array),
+        );
+        $this->assertSame('order.returns_changed.v1', $array['routingKey']);
+
         // `data` mirrors the constructor parameters in order, and `site` appears
         // here as the ENUM INSTANCE — only the envelope copy is stringified.
         $this->assertSame(
@@ -91,8 +102,17 @@ final class OrderReturnsChangedTest extends TestCase
                 'orderUuid' => 'aaaa1111-bbbb-2222-cccc-333344445555',
                 'sequence' => 7,
             ],
-            $this->make()->toArray()['data'],
+            $array['data'],
         );
+    }
+
+    public function test_sequence_defaults_to_zero_on_construction(): void
+    {
+        // Distinct from the fromArray() default below: this is the CONSTRUCTOR's
+        // default, which is what a producer that forgets to stamp one would send.
+        $event = new OrderReturnsChanged(id: 4321, site: Site::PL);
+
+        $this->assertSame(0, $event->sequence);
     }
 
     public function test_from_array_defaults_the_optional_fields_when_absent(): void

@@ -48,12 +48,12 @@ use Ramsey\Uuid\UuidInterface;
  * computed over the same rows in the same call, so neither side can drift
  * against a frozen figure.
  *
- * There is deliberately no full-return flag. Both sides are exact integer sums
- * over the same set, and returned lines are counted by distinct id, so
- * `returned == total` is exact and `returned > total` unreachable. A flag was
- * tried and removed: a line removed by deleteProduct() is archived and can never
- * appear in o_returns, so a flag counting live lines reported a full return while
- * the amounts reported a partial one.
+ * There is deliberately no full-return flag. Both sides are exact integer sums over
+ * the same set, and returned lines are counted by distinct id, so `returned == total`
+ * is exact and `returned > total` unreachable. A flag was tried and removed: it was
+ * derived from a line count taken over a narrower set than the amounts, so once a line
+ * had left that set the flag reported a full return while the amounts reported a partial
+ * one. Comparing the two totals cannot disagree with itself that way.
  *
  * Every OPTIONAL field carries a default, because ArrayableTrait::fromArray()
  * leaves a missing non-nullable typed property UNINITIALIZED, which throws on
@@ -76,8 +76,8 @@ final class OrderReturnsChanged extends AbstractEmotiEvent implements EmotiEvent
         public int $orderEligibleAmountCents = 0,
         public ?string $orderUuid = null,
         /**
-         * Per-order RETURN-axis sequence, always positive: agcore refuses to
-         * publish when it cannot stamp one, so consumers never see 0.
+         * Per-order, per-axis (return) sequence: positive; 0 = unsequenced.
+         * See "Event sequencing" in docs/message-broker.md.
          */
         public int $sequence = 0,
     ) {}
