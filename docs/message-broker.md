@@ -155,7 +155,7 @@ each undo an earlier one, so a **stale redelivery arriving after its inverse**
 would otherwise re-apply an effect that has already been reversed. The `sequence`
 field lets consumers drop those.
 
-`OrderReturnsChanged` needs the same protection for a different reason: it has no
+`OrderReturnStateChanged` needs the same protection for a different reason: it has no
 inverse event, but it is cumulative, so a stale redelivery carrying a *smaller*
 returned share would drag a consumer's target backwards.
 
@@ -168,7 +168,7 @@ axis says nothing about the others:
 |------|--------|---------|
 | **Payment** | `OrderPaid` / `OrderCancelled` | order is paid / marked unpaid |
 | **Existence** | `OrderRestored` / `OrderDeleted` | order exists / is deleted |
-| **Return** | `OrderReturnsChanged` | cumulative returned share of the order |
+| **Return** | `OrderReturnStateChanged` | cumulative returned share of the order |
 
 The producer (agcore) keeps one monotonic counter **per order, per axis** and
 stamps every event with the next value on its axis. Counters survive

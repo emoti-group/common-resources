@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Tests\Unit\Queue\Events\Order;
 
 use Emoti\CommonResources\Enums\Site;
-use Emoti\CommonResources\Queue\Events\Order\OrderReturnsChanged;
+use Emoti\CommonResources\Queue\Events\Order\OrderReturnStateChanged;
 use Emoti\CommonResources\Queue\Message;
 use PHPUnit\Framework\TestCase;
 
-final class OrderReturnsChangedTest extends TestCase
+final class OrderReturnStateChangedTest extends TestCase
 {
-    private function make(array $overrides = []): OrderReturnsChanged
+    private function make(array $overrides = []): OrderReturnStateChanged
     {
         $site = $overrides['site'] ?? Site::PL;
 
-        $event = new OrderReturnsChanged(
+        $event = new OrderReturnStateChanged(
             id: $overrides['id'] ?? 4321,
             site: $site,
             isB2b: $overrides['isB2b'] ?? false,
@@ -43,12 +43,12 @@ final class OrderReturnsChangedTest extends TestCase
 
     public function test_routing_name_is_order_returns_changed(): void
     {
-        $this->assertSame('order.returns_changed', OrderReturnsChanged::routingName());
+        $this->assertSame('order.returns_changed', OrderReturnStateChanged::routingName());
     }
 
     public function test_version_is_one(): void
     {
-        $this->assertSame(1, OrderReturnsChanged::version());
+        $this->assertSame(1, OrderReturnStateChanged::version());
     }
 
     public function test_resource_id_returns_id(): void
@@ -63,7 +63,7 @@ final class OrderReturnsChangedTest extends TestCase
 
     public function test_round_trip_preserves_constructor_fields(): void
     {
-        $restored = OrderReturnsChanged::fromArray($this->make()->toArray());
+        $restored = OrderReturnStateChanged::fromArray($this->make()->toArray());
 
         $this->assertSame(4321, $restored->id);
         $this->assertSame(Site::PL, $restored->site);
@@ -110,7 +110,7 @@ final class OrderReturnsChangedTest extends TestCase
     {
         // Distinct from the fromArray() default below: this is the CONSTRUCTOR's
         // default, which is what a producer that forgets to stamp one would send.
-        $event = new OrderReturnsChanged(id: 4321, site: Site::PL);
+        $event = new OrderReturnStateChanged(id: 4321, site: Site::PL);
 
         $this->assertSame(0, $event->sequence);
     }
@@ -122,7 +122,7 @@ final class OrderReturnsChangedTest extends TestCase
         $array = $this->make()->toArray();
         $array['data'] = ['id' => 4321];
 
-        $restored = OrderReturnsChanged::fromArray($array);
+        $restored = OrderReturnStateChanged::fromArray($array);
 
         $this->assertSame(4321, $restored->id);
         $this->assertFalse($restored->isB2b);
@@ -140,17 +140,17 @@ final class OrderReturnsChangedTest extends TestCase
         $array = $this->make(['site' => Site::EE])->toArray();
         $array['data'] = ['id' => 4321];
 
-        $this->assertSame(Site::EE, OrderReturnsChanged::fromArray($array)->site);
+        $this->assertSame(Site::EE, OrderReturnStateChanged::fromArray($array)->site);
     }
 
     public function test_b2b_flag_round_trips(): void
     {
-        $this->assertTrue(OrderReturnsChanged::fromArray($this->make(['isB2b' => true])->toArray())->isB2b);
+        $this->assertTrue(OrderReturnStateChanged::fromArray($this->make(['isB2b' => true])->toArray())->isB2b);
     }
 
     public function test_null_order_uuid_round_trips(): void
     {
-        $this->assertNull(OrderReturnsChanged::fromArray($this->make(['orderUuid' => null])->toArray())->orderUuid);
+        $this->assertNull(OrderReturnStateChanged::fromArray($this->make(['orderUuid' => null])->toArray())->orderUuid);
     }
 
     public function test_message_json_round_trip_preserves_fields(): void
@@ -159,14 +159,14 @@ final class OrderReturnsChangedTest extends TestCase
         // in-memory array round trip — mirrors OrderPaidTest's sibling test.
         $event = $this->make();
 
-        $json = (new Message($event->toArray(), OrderReturnsChanged::class))->toJson();
+        $json = (new Message($event->toArray(), OrderReturnStateChanged::class))->toJson();
 
         // Pin the actual wire bytes: site is the enum *value* string.
         $wire = json_decode($json, true)['content']['data'];
         $this->assertSame('pl', $wire['site']);
         $this->assertSame(7, $wire['sequence']);
 
-        $restored = OrderReturnsChanged::fromArray(Message::fromJson($json)->content);
+        $restored = OrderReturnStateChanged::fromArray(Message::fromJson($json)->content);
 
         $this->assertSame(4321, $restored->id);
         $this->assertSame(Site::PL, $restored->site);
@@ -180,7 +180,7 @@ final class OrderReturnsChangedTest extends TestCase
         // `make()` defaults) so a bug that transposes the loyalty-discount pair
         // with the eligible-amount pair — whether field-for-field or pair-for-pair
         // — fails visibly instead of the coincidence masking it.
-        $restored = OrderReturnsChanged::fromArray($this->make([
+        $restored = OrderReturnStateChanged::fromArray($this->make([
             'returnedLoyaltyDiscountCents' => 6000,
             'orderLoyaltyDiscountCents' => 6000,
             'returnedEligibleAmountCents' => 15000,

@@ -60,7 +60,7 @@ use Ramsey\Uuid\UuidInterface;
  * first read. `id` and `site` are required and always sent; `site` additionally
  * travels at envelope level and is restored from there.
  */
-final class OrderReturnsChanged extends AbstractEmotiEvent implements EmotiEventInterface
+final class OrderReturnStateChanged extends AbstractEmotiEvent implements EmotiEventInterface
 {
     public function __construct(
         public int $id,
