@@ -18,6 +18,12 @@ final class RabbitMQClient
     use SingletonTrait;
 
     private const MAX_PRIORITY = 10;
+
+    /**
+     * Declare the type explicitly, because a broker default of `quorum` gives a
+     * queue that refuses `x-max-priority`.
+     */
+    private const QUEUE_TYPE = 'classic';
     public AbstractConnection $connection;
     public AMQPChannel $channel;
 
@@ -56,6 +62,7 @@ final class RabbitMQClient
             durable: true,
             auto_delete: false,
             arguments: new AMQPTable([
+                'x-queue-type' => self::QUEUE_TYPE,
                 'x-dead-letter-exchange' => '',
                 'x-dead-letter-routing-key' => $this->buildDeadLetterQueueName($queueSuffix),
                 'x-max-priority' => self::MAX_PRIORITY,
@@ -67,6 +74,7 @@ final class RabbitMQClient
             durable: true,
             auto_delete: false,
             arguments: new AMQPTable([
+                'x-queue-type' => self::QUEUE_TYPE,
                 'x-max-priority' => self::MAX_PRIORITY,
             ])
         );
