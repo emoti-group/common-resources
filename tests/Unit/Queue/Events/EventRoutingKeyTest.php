@@ -40,7 +40,7 @@ final class EventRoutingKeyTest extends TestCase
             [ProductRemovedFromUpsellGroup::class, 'product.removed_from_upsell_group.v1'],
             [ProductUpdated::class, 'product.updated.v1'],
             [OrderPaid::class, 'order.paid.v1'],
-            [OrderReturnStateChanged::class, 'order.returns_changed.v1'],
+            [OrderReturnStateChanged::class, 'order.return_state_changed.v1'],
             [LocationUpdated::class, 'location.updated.v1'],
             [CloudflareCachePurgeRequested::class, 'cloudflare.cache_purge_requested.v1'],
             [ExternalQueueRestartRequested::class, 'system.restart.v1'],

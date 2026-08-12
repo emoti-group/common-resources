@@ -91,7 +91,7 @@ docker-compose down
 
 ## Tests
 
-`composer test` runs the PHPUnit suite (196 tests). Code quality also relies on PHP strict typing (all files use `declare(strict_types=1)`), interface contracts, and PHPStan with `dave-liddament/phpstan-php-language-extensions`.
+`composer test` runs the PHPUnit suite and reports the test count. Code quality also relies on PHP strict typing (all files use `declare(strict_types=1)`), interface contracts, and PHPStan with `dave-liddament/phpstan-php-language-extensions`.
 
 ## Adding a New Event
 

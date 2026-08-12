@@ -83,7 +83,7 @@ final class OrderReturnStateChanged extends AbstractEmotiEvent implements EmotiE
 
     public static function routingName(): string
     {
-        return 'order.returns_changed';
+        return 'order.return_state_changed';
     }
 
     public static function version(): int

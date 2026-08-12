@@ -42,9 +42,9 @@ final class OrderReturnStateChangedTest extends TestCase
         return $event;
     }
 
-    public function test_routing_name_is_order_returns_changed(): void
+    public function test_routing_name_is_order_return_state_changed(): void
     {
-        $this->assertSame('order.returns_changed', OrderReturnStateChanged::routingName());
+        $this->assertSame('order.return_state_changed', OrderReturnStateChanged::routingName());
     }
 
     public function test_version_is_one(): void
@@ -89,7 +89,7 @@ final class OrderReturnStateChangedTest extends TestCase
             ['site', 'sendAt', 'data', 'resourceId', 'resourceUuid', 'version', 'eventId', 'routingKey'],
             array_keys($array),
         );
-        $this->assertSame('order.returns_changed.v1', $array['routingKey']);
+        $this->assertSame('order.return_state_changed.v1', $array['routingKey']);
 
         // `data` mirrors the constructor parameters in order. `site` is absent by
         // design: it lives at envelope level only, which is why the round-trip
