@@ -155,15 +155,20 @@ each undo an earlier one, so a **stale redelivery arriving after its inverse**
 would otherwise re-apply an effect that has already been reversed. The `sequence`
 field lets consumers drop those.
 
-### Two independent axes
+`OrderReturnStateChanged` needs the same protection for a different reason: it has no
+inverse event, but it is cumulative, so a stale redelivery carrying a *smaller*
+returned share would drag a consumer's target backwards.
 
-An order has two orthogonal, independently reversible states, each with its own
-counter — an event on one axis says nothing about the other:
+### Three independent axes
+
+An order has three orthogonal states, each with its own counter — an event on one
+axis says nothing about the others:
 
 | Axis | Events | Meaning |
 |------|--------|---------|
 | **Payment** | `OrderPaid` / `OrderCancelled` | order is paid / marked unpaid |
 | **Existence** | `OrderRestored` / `OrderDeleted` | order exists / is deleted |
+| **Return** | `OrderReturnStateChanged` | cumulative returned share of the order |
 
 The producer (agcore) keeps one monotonic counter **per order, per axis** and
 stamps every event with the next value on its axis. Counters survive
@@ -178,9 +183,17 @@ delete/undelete.
   applied (its watermark), and **drops any event whose `sequence` is
   strictly-older than that watermark** ("drop strictly-older"). An event with
   `sequence = 0` is always applied — there is no staleness information to compare.
-- Because the two axes have separate counters, staleness is judged
+- Because the three axes have separate counters, staleness is judged
   **within an axis only**: an `OrderDeleted` (existence) is never compared
   against an `OrderPaid` (payment) watermark.
+- **The return axis is the one exception to "`sequence = 0` is always applied", and it
+  is the consumer's rule to enforce.** Its payload is cumulative, so an unsequenced
+  event cannot be ordered against the watermark at all — applying one would let a
+  message carrying a smaller total overwrite a larger, already-correct one. A consumer
+  on this axis must therefore **refuse** an event with `sequence < 1` rather than apply
+  it. The producer is expected never to emit one (agcore declines to publish when it
+  cannot stamp a sequence), but the consumer does not rely on that: `fromArray()`
+  defaults a missing `sequence` to 0, so 0 is reachable and must be handled.
 
 ### `OrderRestored.isPaid` is an unsequenced snapshot
 

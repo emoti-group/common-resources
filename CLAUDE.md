@@ -89,12 +89,29 @@ docker-compose down
 - **Elasticsearch** — `common-resources-elasticsearch-1:9200` | UI: https://elasticvue.com/
 - **Traefik** — UI: http://localhost:8081
 
-## No Tests
+## Tests
 
-This library has no test suite. Code quality relies on PHP strict typing (all files use `declare(strict_types=1)`), interface contracts, and PHPStan with `dave-liddament/phpstan-php-language-extensions`.
+`composer test` runs the PHPUnit suite and reports the test count. Code quality also relies on PHP strict typing (all files use `declare(strict_types=1)`), interface contracts, and PHPStan with `dave-liddament/phpstan-php-language-extensions`.
 
 ## Adding a New Event
 
 1. Create a class in `src/Queue/Events/{Domain}/` extending `AbstractEmotiEvent`.
 2. Add the required constructor properties and use the standard traits.
 3. Update consuming services' `config/common-resources.php` bindings.
+
+### Do NOT put `$site` in an event constructor
+
+`AbstractEmotiEvent` already carries the site: `dispatch(Site $site)` stamps it via
+`setSite()`, `toArray()` writes it at **envelope** level, and `fromArray()` restores it from
+there — so a constructor parameter adds a second copy of one fact. It also lands `site`
+inside the `data` payload, which is not where consumers should read it from.
+
+Consequence for consumers, and the reason this is easy to get wrong: with no constructor
+parameter, `site` is `ExtraPropertiesTrait`'s **protected** property, so a consumer reads
+`$event->site()` — not `$event->site`. Both spellings exist across this library today
+(`OrderDeleted` and `OrderRestored` are correct; `OrderPaid` and `OrderCancelled` still take
+the parameter), so copying an existing event is not a reliable guide. Follow this section.
+
+Same rule for `eventId` and `sendAt`: the traits own them, `dispatch()` sets them. In a test
+that does not call `dispatch()`, call `setSite()` / `setEventId()` / `setSendAt()` by hand
+before `toArray()` — otherwise `toArray()` throws on the uninitialized `sendAt`.
