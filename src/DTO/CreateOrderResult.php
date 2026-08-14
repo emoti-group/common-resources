@@ -7,17 +7,17 @@ namespace Emoti\CommonResources\DTO;
 /**
  * Shared result of a createOrder operation, used by agcore and gifts-api.
  */
-final readonly class CreateOrderResult
+final class CreateOrderResult
 {
     /**
      * @param list<string> $reservationCodeUuids
      */
     public function __construct(
-        public int $id,
-        public int $number,
-        public ?string $customerType,
-        public ?string $userUuid,
-        public array $reservationCodeUuids = [],
+        public readonly int $id,
+        public readonly int $number,
+        public readonly ?string $customerType,
+        public readonly ?string $userUuid,
+        public readonly array $reservationCodeUuids = [],
     ) {}
 
     /**
