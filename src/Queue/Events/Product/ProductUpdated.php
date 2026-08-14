@@ -116,7 +116,10 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public array $seoDescriptions = [],
         public array $variations = [],
         public array $legacyLocations = [],
-    ) {}
+        public ?string $event_hash = null,
+    ) {
+        $this->event_hash ??= $this->getHash();
+    }
 
     public static function routingName(): string
     {
@@ -136,5 +139,12 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
     public function resourceUuid(): ?UuidInterface
     {
         return null;
+    }
+
+    private function getHash(): string
+    {
+        $data = $this->data();
+        unset($data['event_hash']);
+        return md5(serialize($data));
     }
 }
