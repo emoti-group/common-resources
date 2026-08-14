@@ -27,7 +27,14 @@ use Ramsey\Uuid\UuidInterface;
  * @property list<int> $packageChildrenIds Ids of products that belong to this product. Empty when isPackage property is false.
  * @property list<string> $cacheTagsToInvalidate Cache tags of OLD entities that were attached to the product, but they are not anymore. Example: locations that were removed from the product.
  * @property array<Lang, string> $urlsPerLang
- * @property array{equipment: array{lang: string, value: string}, duration: array{lang: string, value: string}, participants: array{lang: string, value: string}, weather: array{lang: string, value: string}} $legacyDetails
+ * @property array{
+ *      equipment: array{lang: string, value: string|null}, 
+ *      duration: array{lang: string, value: string|null}, 
+ *      participants: array{lang: string, value: string|null}, 
+ *      weather: array{lang: string, value: string|null},
+ *      important: array{lang: string, value: string|null},
+ *      includes: array{lang: string, value: string|null}
+ * } $legacyDetails
  * @property array{
  *      summary: list<array{lang: string, value: string}>,
  *      location: list<array{lang: string, value: string}>,
