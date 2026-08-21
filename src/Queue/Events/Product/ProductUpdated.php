@@ -50,6 +50,7 @@ use Ramsey\Uuid\UuidInterface;
  *  } $details
  * @property list<array{id: int, price: float}> $priceVariants
  * @property list<int> $recommendedProductIds
+ * @property ?string $validTill Absolute CMS date in Y-m-d. Null when empty.
  */
 final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInterface
 {
@@ -110,6 +111,7 @@ final class ProductUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public array $legacyDetails = [],
         public array $details = [],
         public ?int $validity = null,
+        public ?string $validTill = null,
         public array $recommendedProductIds = [],
         public float $lowestPrice30Days = 0.0,
         public ?int $remainingProductsInCampaign = null,
