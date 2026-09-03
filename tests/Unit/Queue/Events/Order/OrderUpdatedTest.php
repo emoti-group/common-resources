@@ -18,13 +18,12 @@ final class OrderUpdatedTest extends TestCase
 
     private function makeEvent(
         int $externalOrderId = 42,
-        string $uuid = self::VALID_UUID,
         ?DateTimeImmutable $createdAt = null,
     ): OrderUpdated {
         $createdAt ??= new DateTimeImmutable('2026-07-01 10:00:00.000000', new DateTimeZone('UTC'));
 
         return new OrderUpdated(
-            uuid: $uuid,
+            uuid: self::VALID_UUID,
             externalOrderId: $externalOrderId,
             accountingNoteSeller: [],
             accessories: [],
@@ -72,17 +71,11 @@ final class OrderUpdatedTest extends TestCase
         $this->assertSame(42, $this->makeEvent()->resourceId());
     }
 
-    public function test_resource_uuid_parses_valid_uuid(): void
+    public function test_resource_uuid_returns_order_uuid(): void
     {
         $event = $this->makeEvent();
 
-        $this->assertNotNull($event->resourceUuid());
         $this->assertTrue(Uuid::fromString(self::VALID_UUID)->equals($event->resourceUuid()));
-    }
-
-    public function test_resource_uuid_is_null_for_invalid_uuid(): void
-    {
-        $this->assertNull($this->makeEvent(uuid: 'not-a-uuid')->resourceUuid());
     }
 
     public function test_constructor_exposes_typed_fields_not_a_bag(): void

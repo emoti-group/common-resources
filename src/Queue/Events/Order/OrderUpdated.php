@@ -83,12 +83,8 @@ final class OrderUpdated extends AbstractEmotiEvent implements EmotiEventInterfa
         return $this->externalOrderId;
     }
 
-    public function resourceUuid(): ?UuidInterface
+    public function resourceUuid(): UuidInterface
     {
-        if ($this->uuid === '' || !Uuid::isValid($this->uuid)) {
-            return null;
-        }
-
         return Uuid::fromString($this->uuid);
     }
 }
