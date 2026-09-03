@@ -8,9 +8,11 @@ use Emoti\CommonResources\Queue\Events\Cache\CloudflareCachePurgeRequested;
 use Emoti\CommonResources\Queue\Events\Location\LocationUpdated;
 use Emoti\CommonResources\Queue\Events\Order\OrderPaid;
 use Emoti\CommonResources\Queue\Events\Order\OrderReturnStateChanged;
+use Emoti\CommonResources\Queue\Events\Order\OrderUpdated;
 use Emoti\CommonResources\Queue\Events\Product\ProductAddedToUpsellGroup;
 use Emoti\CommonResources\Queue\Events\Product\ProductRemovedFromUpsellGroup;
 use Emoti\CommonResources\Queue\Events\Product\ProductUpdated;
+use Emoti\CommonResources\Queue\Events\Voucher\VoucherUpdated;
 use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
 use Emoti\CommonResources\Queue\Events\System\ExternalQueueRestartRequested;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -40,6 +42,8 @@ final class EventRoutingKeyTest extends TestCase
             [ProductRemovedFromUpsellGroup::class, 'product.removed_from_upsell_group.v1'],
             [ProductUpdated::class, 'product.updated.v1'],
             [OrderPaid::class, 'order.paid.v1'],
+            [OrderUpdated::class, 'order.updated.v1'],
+            [VoucherUpdated::class, 'voucher.updated.v1'],
             [OrderReturnStateChanged::class, 'order.return_state_changed.v1'],
             [LocationUpdated::class, 'location.updated.v1'],
             [CloudflareCachePurgeRequested::class, 'cloudflare.cache_purge_requested.v1'],
