@@ -148,6 +148,11 @@ $event->dispatch($site);
 
 ## Event sequencing (order lifecycle)
 
+`OrderUpdated` and `VoucherUpdated` are unsequenced read-model snapshots
+(last-write-wins). They are **not** lifecycle-axis events and carry no
+`sequence`. A CMS delete is still `OrderUpdated`, with a CANCELED overlay on
+the snapshot — do not confuse it with sequenced `OrderDeleted`.
+
 The RabbitMQ transport is at-least-once: an event can be redelivered (consumer
 scale-out, DLQ replay, nacks). For most events that is harmless, but the order
 lifecycle events (`OrderPaid`, `OrderCancelled`, `OrderDeleted`, `OrderRestored`)

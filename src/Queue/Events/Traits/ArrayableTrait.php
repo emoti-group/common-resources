@@ -6,10 +6,13 @@ namespace Emoti\CommonResources\Queue\Events\Traits;
 
 use BackedEnum;
 use Carbon\CarbonImmutable;
+use DateTimeImmutable;
+use DateTimeZone;
 use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use ReflectionClass;
+use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionType;
 
@@ -78,7 +81,7 @@ trait ArrayableTrait
 
     private static function resolvePropertyValue(mixed $value, ?ReflectionType $type): mixed
     {
-        if ($value !== null && $type !== null && !$type->isBuiltin()) {
+        if ($value !== null && $type instanceof ReflectionNamedType && !$type->isBuiltin()) {
             $typeName = $type->getName();
 
             if (enum_exists($typeName)) {
@@ -92,6 +95,22 @@ trait ArrayableTrait
 
             if ($typeName === CarbonImmutable::class) {
                 return CarbonImmutable::parse($value);
+            }
+
+            if ($typeName === DateTimeImmutable::class) {
+                if ($value instanceof DateTimeImmutable) {
+                    return $value;
+                }
+
+                if (is_array($value) && isset($value['date'])) {
+                    $timezone = isset($value['timezone'])
+                        ? new DateTimeZone((string) $value['timezone'])
+                        : new DateTimeZone('UTC');
+
+                    return new DateTimeImmutable((string) $value['date'], $timezone);
+                }
+
+                return new DateTimeImmutable((string) $value);
             }
 
             if (class_exists($typeName) && method_exists($typeName, 'fromArray')) {
