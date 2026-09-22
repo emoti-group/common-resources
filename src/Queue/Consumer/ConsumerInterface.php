@@ -6,13 +6,13 @@ namespace Emoti\CommonResources\Queue\Consumer;
 
 use Closure;
 use DaveLiddament\PhpLanguageExtensions\NamespaceVisibility;
-use Exception;
+use Throwable;
 
 #[NamespaceVisibility(namespace: 'Emoti\CommonResources\Queue')]
 interface ConsumerInterface
 {
     /**
-     * @param Closure(Exception): void $captureException
+     * @param Closure(Throwable): void $captureException
      */
     public function consume(Closure $captureException, string $queueName): void;
 }

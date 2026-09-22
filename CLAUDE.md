@@ -20,10 +20,12 @@ src/
 │   │   └── AbstractEmotiEvent.php
 │   ├── Publisher/       # RabbitMQPublisher + PublisherInterface
 │   ├── Consumer/        # RabbitMQConsumer + ConsumerInterface
+│   ├── Listeners/       # QueueJobMetricsSubscriber (Laravel queue events → queue job metrics)
 │   └── Client/          # RabbitMQ connection setup
 ├── Enums/               # Type-safe constants (Lang, Site, ProductStatus, PromotionType, FeatureFlag, …)
 ├── DTO/                 # Data Transfer Objects (GeoJsonGeometryDTO, …)
 ├── Services/            # GeoJsonLineHelper, LocationsHelper, PdfService/
+│   └── Monitoring/      # ErrorReporter + MetricsReporter abstractions over Sentry, QueueJobMetrics schema
 ├── Traits/              # SingletonTrait, ArrayableEnumTrait
 ├── Commands/            # ExternalQueueWork artisan command
 └── CommonResourcesServiceProvider.php
@@ -38,6 +40,18 @@ src/
   - `DispatchableTrait` — `$event->dispatch(Site::PL)` sends to RabbitMQ
   - `ExtraPropertiesTrait` — dynamic extra properties
 - Namespace visibility is enforced via `DaveLiddament\PhpLanguageExtensions\NamespaceVisibility` attributes — event internals are restricted to `Emoti\CommonResources\Queue`.
+
+### Monitoring (Sentry) rule
+
+`Services/Monitoring/SentryErrorReporter` and `SentryMetricsReporter` are the only classes that
+may reference `\Sentry\*`. Everything else depends on `ErrorReporterInterface` /
+`MetricsReporterInterface`. The queue job metric (`queue.job.processed`, one entry per attempt with
+an `outcome` attribute) is emitted by `QueueJobMetrics` for both the Laravel queue and the external
+consumer; the schema lives in its docblock, the Laravel outcome semantics in
+`Queue/Listeners/QueueJobMetricsSubscriber`. There is no on/off flag in this package: the switch is
+Sentry's `enable_metrics` option, enforced by `SentryMetricsReporter`. Consuming services must set
+`metric_flush_threshold`, a constant `server_name` and
+`'before_send_metric' => [SentryMetricsReporter::class, 'beforeSendMetric']` in their Sentry options.
 
 ### Publishing an event (Laravel)
 
