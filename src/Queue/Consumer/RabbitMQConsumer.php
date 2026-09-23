@@ -15,6 +15,7 @@ use Emoti\CommonResources\Services\Monitoring\QueueJobMetrics;
 use Emoti\CommonResources\Services\Monitoring\SentryMetricsReporter;
 use Emoti\CommonResources\Support\Config\Config;
 use Illuminate\Support\Facades\App;
+use PhpAmqpLib\Exception\AMQPTimeoutException;
 use PhpAmqpLib\Message\AMQPMessage;
 use Throwable;
 
@@ -25,9 +26,9 @@ final class RabbitMQConsumer implements ConsumerInterface
 
     /**
      * Low-traffic queues may never reach the SDK's size-based flush threshold, so buffered
-     * metrics are also sent whenever the last flush is older than this (checked after each
-     * message has been acked/nacked; the flush is a blocking HTTP call bounded by the SDK's
-     * http timeouts).
+     * metrics are also sent whenever the last flush is older than this: after each message
+     * and from the consume loop while idle. The flush is a blocking HTTP call bounded by the
+     * SDK's http timeouts.
      */
     private const METRICS_FLUSH_INTERVAL_SECONDS = 30;
 
@@ -65,12 +66,42 @@ final class RabbitMQConsumer implements ConsumerInterface
         try {
             [, $declaredQueueName] = (new RabbitMQSetupper($this->client))->setup($queueName);
             $this->startQueueConsumer($declaredQueueName, $captureException, $queueName);
-            $this->client->channel->consume();
+            $this->consumeLoop();
         } catch (Throwable $e) {
             $captureException($e);
             $this->client->channel->close();
             $this->client->connection->close();
             exit;
+        }
+    }
+
+    /**
+     * Same loop as AMQPChannel::consume(), but waking up at least every
+     * METRICS_FLUSH_INTERVAL_SECONDS so buffered metrics of the last message leave the
+     * process even when no further message arrives.
+     *
+     * @throws Throwable
+     */
+    private function consumeLoop(): void
+    {
+        $channel = $this->client->channel;
+        $connection = $this->client->connection;
+
+        $timeout = min($connection->getReadTimeout(), self::METRICS_FLUSH_INTERVAL_SECONDS);
+        $heartbeat = $connection->getHeartbeat();
+        if ($heartbeat > 2) {
+            $timeout = min($timeout, (int) floor($heartbeat / 2));
+        }
+        $timeout = max($timeout, 1);
+
+        while ($channel->is_consuming()) {
+            try {
+                $channel->wait(null, false, $timeout);
+            } catch (AMQPTimeoutException) {
+                // idle: nothing arrived within the timeout
+            }
+
+            $this->metrics->flushIfOlderThan(self::METRICS_FLUSH_INTERVAL_SECONDS);
         }
     }
 

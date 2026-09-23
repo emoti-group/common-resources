@@ -53,13 +53,12 @@ final class QueueJobMetrics
     public const ATTR_OUTCOME = 'outcome';
     public const ATTR_ERROR_TYPE = 'error.type';
 
-    private float $lastFlushAt;
+    /** 0.0 = never flushed, so the first flushIfOlderThan() after start sends right away. */
+    private float $lastFlushAt = 0.0;
 
     public function __construct(
         private readonly MetricsReporterInterface $reporter,
-    ) {
-        $this->lastFlushAt = microtime(true);
-    }
+    ) {}
 
     public function recordSuccess(string $job, string $queue, string $runtime, int $attempt, float $durationMs): void
     {

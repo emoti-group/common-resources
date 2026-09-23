@@ -116,16 +116,17 @@ final class QueueJobMetricsTest extends TestCase
         $this->assertSame([], $this->reporter->distributions);
     }
 
-    public function test_flush_if_older_than_only_flushes_when_due(): void
+    public function test_flush_if_older_than_flushes_immediately_the_first_time_then_only_when_due(): void
     {
+        // Never flushed yet: the first metric of a fresh process must not wait for the interval.
         $this->metrics->flushIfOlderThan(3600);
-        $this->assertSame(0, $this->reporter->flushes);
-
-        $this->metrics->flushIfOlderThan(0);
         $this->assertSame(1, $this->reporter->flushes);
 
         // The clock restarts after a flush.
         $this->metrics->flushIfOlderThan(3600);
         $this->assertSame(1, $this->reporter->flushes);
+
+        $this->metrics->flushIfOlderThan(0);
+        $this->assertSame(2, $this->reporter->flushes);
     }
 }
