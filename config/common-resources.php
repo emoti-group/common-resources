@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Emoti\CommonResources\Services\Monitoring\SentryErrorReporter;
+use Emoti\CommonResources\Services\Monitoring\SentryMetricsReporter;
 
 return [
     /**
@@ -51,4 +52,16 @@ return [
      * class implementing ErrorReporterInterface.
      */
     'error_reporter' => SentryErrorReporter::class,
+
+    /**
+     * The implementation bound to MetricsReporterInterface (used by the MetricsReporter facade
+     * and by the queue job metrics emitted for every Laravel queue job and every external-queue
+     * message — schema in Services\Monitoring\QueueJobMetrics). Same override rule as error_reporter.
+     *
+     * There is no on/off flag here on purpose. Disable metrics with Sentry's own option
+     * ('enable_metrics' => false / SENTRY_ENABLE_METRICS=false), which turns every call into
+     * a no-op, and set 'metric_flush_threshold' in config/sentry.php so the SDK buffer
+     * auto-flushes instead of dropping its oldest entries.
+     */
+    'metrics_reporter' => SentryMetricsReporter::class,
 ];

@@ -11,31 +11,54 @@ use Emoti\CommonResources\Queue\EmotiListenerInterface;
 use Emoti\CommonResources\Queue\Events\EmotiEventInterface;
 use Emoti\CommonResources\Queue\Events\System\ExternalQueueRestartRequested;
 use Emoti\CommonResources\Queue\Message;
+use Emoti\CommonResources\Services\Monitoring\QueueJobMetrics;
+use Emoti\CommonResources\Services\Monitoring\SentryMetricsReporter;
 use Emoti\CommonResources\Support\Config\Config;
-use Exception;
 use Illuminate\Support\Facades\App;
 use PhpAmqpLib\Message\AMQPMessage;
 use Throwable;
 
-
 final class RabbitMQConsumer implements ConsumerInterface
 {
-    private readonly RabbitMQClient $client;
+    private const MAX_RETRIES = 3;
+    private const RETRY_DELAY_SECONDS = 5;
 
-    public function __construct()
+    /**
+     * Low-traffic queues may never reach the SDK's size-based flush threshold, so buffered
+     * metrics are also sent whenever the last flush is older than this (checked after each
+     * message has been acked/nacked; the flush is a blocking HTTP call bounded by the SDK's
+     * http timeouts).
+     */
+    private const METRICS_FLUSH_INTERVAL_SECONDS = 30;
+
+    private readonly RabbitMQClient $client;
+    private readonly QueueJobMetrics $metrics;
+
+    public function __construct(?QueueJobMetrics $metrics = null)
     {
         $this->client = RabbitMQClient::getInstance();
+        // Laravel injects the container singleton; no-framework apps get a standalone instance.
+        $this->metrics = $metrics ?? new QueueJobMetrics(new SentryMetricsReporter());
 
-        // Handle consumer shutdown
+        // Handle consumer shutdown (also the `exit` after ExternalQueueRestartRequested)
         register_shutdown_function(function () {
-            $this->client->channel->close();
-            $this->client->connection->close();
+            $this->metrics->flush();
+
+            try {
+                $this->client->channel->close();
+            } catch (Throwable) {
+            }
+
+            try {
+                $this->client->connection->close();
+            } catch (Throwable) {
+            }
         });
     }
 
     /**
-     * @param Closure(Exception): void $captureException
-     * @throws Exception
+     * @param Closure(Throwable): void $captureException
+     * @throws Throwable
      */
     public function consume(Closure $captureException, string $queueName): void
     {
@@ -52,21 +75,54 @@ final class RabbitMQConsumer implements ConsumerInterface
     }
 
     /**
-     * @param Closure(Exception): void $captureException
+     * @param Closure(Throwable): void $captureException
      */
     private function startQueueConsumer(string $queueName, Closure $captureException, string $bindingsGroup): void
     {
         $callback = function (AMQPMessage $AMQPMessage) use ($captureException, $bindingsGroup) {
+            $outcome = new MessageMetrics();
+
             try {
-                $event = $this->processTheMessage($AMQPMessage, $bindingsGroup);
+                $event = $this->processTheMessage($AMQPMessage, $bindingsGroup, $outcome);
                 $AMQPMessage->ack();
 
-                if ($event instanceof ExternalQueueRestartRequested) {
-                    exit;
+                // Recorded after ack(): a failing ack lands in the catch below and must not
+                // leave both a success and a failure for the same message.
+                if ($outcome->skipped) {
+                    $this->metrics->recordSkipped($outcome->job, $bindingsGroup, QueueJobMetrics::RUNTIME_EXTERNAL);
+                } else {
+                    $this->metrics->recordSuccess(
+                        $outcome->job,
+                        $bindingsGroup,
+                        QueueJobMetrics::RUNTIME_EXTERNAL,
+                        $outcome->attempt,
+                        $outcome->lastAttemptMs(),
+                    );
                 }
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
+                // Throwable, not Exception: a TypeError in a listener must nack the message
+                // like any other failure instead of escaping and killing the consumer.
+                // nack() has requeue=false, so this is the final outcome (dead-letter queue);
+                // an undecodable body is counted under `unknown`.
                 $AMQPMessage->nack();
                 $captureException($e);
+
+                $this->metrics->recordFailure(
+                    $outcome->job,
+                    $bindingsGroup,
+                    QueueJobMetrics::RUNTIME_EXTERNAL,
+                    max(1, $outcome->attempt),
+                    $outcome->lastAttemptMs(),
+                    $e,
+                );
+
+                return;
+            } finally {
+                $this->metrics->flushIfOlderThan(self::METRICS_FLUSH_INTERVAL_SECONDS);
+            }
+
+            if ($event instanceof ExternalQueueRestartRequested) {
+                exit;
             }
         };
 
@@ -79,47 +135,78 @@ final class RabbitMQConsumer implements ConsumerInterface
         );
     }
 
-    private function processTheMessage(AMQPMessage $AMQPMessage, string $bindingsGroup): EmotiEventInterface
+    /**
+     * @throws Throwable
+     */
+    private function processTheMessage(AMQPMessage $AMQPMessage, string $bindingsGroup, MessageMetrics $outcome): EmotiEventInterface
     {
         $message = Message::fromJson($AMQPMessage->getBody());
 
         /** @var EmotiEventInterface $event */
         $event = $message->class::fromArray($message->content);
 
+        // `$event::class` is the canonical class name; the payload string is never used as
+        // a metric attribute (case variants / arbitrary strings would each be a new series).
+        $outcome->job = $event::class;
+
         $listener = Config::get('bindings.' . $bindingsGroup)[$event::class] ?? null;
 
-        if ($listener) {
-            /** @var EmotiListenerInterface $listenerInstance */
-            $listenerInstance = App::getFacadeRoot() ? App::make($listener) : new $listener();
-            $this->handleWithRetry($listenerInstance, $event);
+        if (! $listener) {
+            $outcome->skipped = true;
+
+            return $event;
         }
+
+        /** @var EmotiListenerInterface $listenerInstance */
+        $listenerInstance = App::getFacadeRoot() ? App::make($listener) : new $listener();
+        $outcome->job = $listenerInstance::class;
+
+        $this->handleWithRetry($listenerInstance, $event, $bindingsGroup, $outcome);
 
         return $event;
     }
 
     /**
-     * @throws Exception
+     * Runs the listener up to MAX_RETRIES + 1 times. Every retried attempt is recorded here
+     * with its own duration; the final attempt is recorded by the caller after ack/nack.
+     *
+     * @throws Throwable
      */
-    private function handleWithRetry(EmotiListenerInterface $listener, EmotiEventInterface $event): void
-    {
-        $maxRetries = 3;
-        $retryDelay = 5;
-        $lastException = null;
+    private function handleWithRetry(
+        EmotiListenerInterface $listener,
+        EmotiEventInterface $event,
+        string $bindingsGroup,
+        MessageMetrics $outcome,
+    ): void {
+        $maxAttempts = self::MAX_RETRIES + 1;
 
-        for ($attempt = 0; $attempt <= $maxRetries; $attempt++) {
+        for ($attempt = 1; ; $attempt++) {
+            $outcome->attempt = $attempt;
+            $startedAt = hrtime(true);
+
             try {
                 $listener->handle($event);
-                return;
-            } catch (Exception $e) {
-                $lastException = $e;
+                $outcome->lastAttemptNanoseconds = hrtime(true) - $startedAt;
 
-                if ($attempt < $maxRetries) {
-                    sleep($retryDelay);
+                return;
+            } catch (Throwable $e) {
+                $outcome->lastAttemptNanoseconds = hrtime(true) - $startedAt;
+
+                if ($attempt >= $maxAttempts) {
+                    throw $e;
                 }
+
+                $this->metrics->recordRetry(
+                    $listener::class,
+                    $bindingsGroup,
+                    QueueJobMetrics::RUNTIME_EXTERNAL,
+                    $attempt,
+                    $outcome->lastAttemptMs(),
+                    $e,
+                );
+                sleep(self::RETRY_DELAY_SECONDS);
             }
         }
-
-        throw $lastException;
     }
 
     private function getConsumerTag(): string
