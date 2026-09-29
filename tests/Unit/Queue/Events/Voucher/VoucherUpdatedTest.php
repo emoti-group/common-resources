@@ -16,6 +16,7 @@ final class VoucherUpdatedTest extends TestCase
     private function makeEvent(
         int $id = 123,
         ?DateTimeImmutable $createdAt = null,
+        bool $codePending = false,
     ): VoucherUpdated {
         $createdAt ??= new DateTimeImmutable('2026-07-01 10:00:00.000000', new DateTimeZone('UTC'));
 
@@ -32,6 +33,7 @@ final class VoucherUpdatedTest extends TestCase
             createdAt: $createdAt,
             updatedAt: $createdAt,
             purchasePrice: 179.99,
+            codePending: $codePending,
         );
     }
 
@@ -92,5 +94,39 @@ final class VoucherUpdatedTest extends TestCase
         $this->assertInstanceOf(DateTimeImmutable::class, $restored->createdAt);
         $this->assertSame('UTC', $restored->createdAt->getTimezone()->getName());
         $this->assertStringStartsWith('2026-07-01 10:00:00', $restored->createdAt->format('Y-m-d H:i:s.u'));
+    }
+
+    public function test_code_pending_defaults_to_false(): void
+    {
+        $this->assertFalse($this->makeEvent()->codePending);
+    }
+
+    public function test_code_pending_survives_message_round_trip(): void
+    {
+        $event = $this->makeEvent(codePending: true);
+        $event->setSite(Site::PL);
+        $event->setEventId();
+        $event->setSendAt();
+
+        $json = (new Message($event->toArray(), VoucherUpdated::class))->toJson();
+        $decoded = json_decode($json, true);
+        $this->assertTrue($decoded['content']['data']['codePending']);
+
+        $restored = VoucherUpdated::fromArray(Message::fromJson($json)->content);
+        $this->assertTrue($restored->codePending);
+    }
+
+    public function test_code_pending_is_false_when_missing_from_wire_payload(): void
+    {
+        $event = $this->makeEvent();
+        $event->setSite(Site::PL);
+        $event->setEventId();
+        $event->setSendAt();
+
+        $content = $event->toArray();
+        unset($content['data']['codePending']);
+
+        $restored = VoucherUpdated::fromArray($content);
+        $this->assertFalse($restored->codePending);
     }
 }
