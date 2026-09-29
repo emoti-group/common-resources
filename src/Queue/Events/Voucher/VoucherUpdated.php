@@ -54,6 +54,7 @@ final class VoucherUpdated extends AbstractEmotiEvent implements EmotiEventInter
         public ?array $originalVoucher = null,
         public ?string $reviewState = null,
         public ?string $reviewToken = null,
+        public bool $codePending = false,
     ) {}
 
     public static function routingName(): string
