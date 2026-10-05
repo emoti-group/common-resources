@@ -69,11 +69,11 @@ subjectAltName = @alt_names
 
 [alt_names]
 DNS.1 = api.emoti
-DNS.2 = *.agcore-wp.emoti
-DNS.3 = *.agcore-ds.emoti
-DNS.4 = *.agcore-el.emoti
-DNS.5 = *.agcore-kg.emoti
-DNS.6 = *.agcore-ld.emoti
+DNS.7 = *.emoti-wp.test
+DNS.8 = *.emoti-ds.test
+DNS.9 = *.emoti-el.test
+DNS.10 = *.emoti-kg.test
+DNS.11 = *.emoti-ld.test
 EOF
 else
   echo "==> Ext file exists: ${EXT_FILE}"

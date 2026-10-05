@@ -1,7 +1,14 @@
 #!/bin/sh
 set -eu
 
-DOMAIN="emoti"
+# Usage: ./macosTraefikDomainResolving.sh [domain1 domain2 ...]
+# Default domain used if none given.
+if [ "$#" -gt 0 ]; then
+  DOMAINS="$*"
+else
+  DOMAINS="emoti test"
+fi
+
 IP="127.0.0.1"
 
 # Detect Homebrew prefix (Intel vs Apple Silicon)
@@ -15,10 +22,9 @@ fi
 DNSMASQ_CONF_DIR="${BREW_PREFIX}/etc"
 DNSMASQ_CONF_FILE="${DNSMASQ_CONF_DIR}/dnsmasq.conf"
 RESOLVER_DIR="/etc/resolver"
-RESOLVER_FILE="${RESOLVER_DIR}/${DOMAIN}"
 
 echo "➡️ Using brew prefix: ${BREW_PREFIX}"
-echo "➡️ Setting wildcard DNS: *.${DOMAIN} -> ${IP}"
+echo "➡️ Setting wildcard DNS for domains: ${DOMAINS} -> ${IP}"
 
 # Install dnsmasq if missing
 if ! brew list dnsmasq >/dev/null 2>&1; then
@@ -38,25 +44,34 @@ if [ -f "${DNSMASQ_CONF_FILE}" ]; then
   sudo cp "${DNSMASQ_CONF_FILE}" "${DNSMASQ_CONF_FILE}.bak.${TS}"
 fi
 
-# Write a minimal dnsmasq config:
-# - map *.emoti to 127.0.0.1
+# Build dnsmasq address lines: one per domain
+ADDRESS_LINES=""
+for DOMAIN in ${DOMAINS}; do
+  ADDRESS_LINES="${ADDRESS_LINES}address=/.${DOMAIN}/${IP}
+"
+done
+
+# Write dnsmasq config:
+# - map *.<domain> to 127.0.0.1 for each domain
 # - listen only on localhost
 # - use port 53
 echo "➡️ Writing ${DNSMASQ_CONF_FILE}"
 sudo tee "${DNSMASQ_CONF_FILE}" >/dev/null <<EOF
 # Managed by setup-wildcard-dns.sh
-address=/.${DOMAIN}/${IP}
-listen-address=${IP}
+${ADDRESS_LINES}listen-address=${IP}
 port=53
 EOF
 
-# Create resolver file so macOS sends *.emoti queries to 127.0.0.1
-echo "➡️ Writing ${RESOLVER_FILE}"
+# Create resolver file per domain so macOS sends *.<domain> queries to 127.0.0.1
 sudo mkdir -p "${RESOLVER_DIR}"
-sudo tee "${RESOLVER_FILE}" >/dev/null <<EOF
+for DOMAIN in ${DOMAINS}; do
+  RESOLVER_FILE="${RESOLVER_DIR}/${DOMAIN}"
+  echo "➡️ Writing ${RESOLVER_FILE}"
+  sudo tee "${RESOLVER_FILE}" >/dev/null <<EOF
 # Managed by setup-wildcard-dns.sh
 nameserver ${IP}
 EOF
+done
 
 # Start dnsmasq as a service
 echo "➡️ Starting dnsmasq..."
@@ -68,15 +83,18 @@ echo "➡️ Flushing macOS DNS cache..."
 sudo dscacheutil -flushcache || true
 sudo killall -HUP mDNSResponder || true
 
-dig test.${DOMAIN} @${IP}
-
-ping -c 1 test.${DOMAIN}
+for DOMAIN in ${DOMAINS}; do
+  dig "test.${DOMAIN}" @${IP}
+  ping -c 1 "test.${DOMAIN}"
+done
 
 echo "✅ Done."
 echo ""
 echo "🔎 Quick tests:"
-echo "  dig test.${DOMAIN} @${IP}"
-echo "  ping -c 1 test.${DOMAIN}"
+for DOMAIN in ${DOMAINS}; do
+  echo "  dig test.${DOMAIN} @${IP}"
+  echo "  ping -c 1 test.${DOMAIN}"
+done
 echo ""
 echo "If something fails, check who is listening on port 53:"
 echo "  sudo lsof -i :53"
