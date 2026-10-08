@@ -74,6 +74,7 @@ DNS.8 = *.emoti-ds.test
 DNS.9 = *.emoti-el.test
 DNS.10 = *.emoti-kg.test
 DNS.11 = *.emoti-ld.test
+DNS.12 = *.emoti.test
 EOF
 else
   echo "==> Ext file exists: ${EXT_FILE}"
