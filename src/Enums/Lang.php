@@ -17,9 +17,7 @@ enum Lang: string
     case PL = 'pl';
     case RU = 'ru';
 
-    /**
-     * ISO 639-1 code for external services; the services use `ee` for Estonian.
-     */
+    // Internal code is ee; external services get the ISO 639-1 code.
     public function isoCode(): string
     {
         return match ($this) {

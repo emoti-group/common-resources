@@ -42,6 +42,19 @@ final class LangTest extends TestCase
     public function test_iso_code_is_et_for_estonian(): void
     {
         $this->assertSame('et', Lang::EE->isoCode());
-        $this->assertSame('pl', Lang::PL->isoCode());
+    }
+
+    #[DataProvider('passThroughLangsProvider')]
+    public function test_iso_code_equals_value_for_other_langs(Lang $lang): void
+    {
+        $this->assertSame($lang->value, $lang->isoCode());
+    }
+
+    /** @return list<array{Lang}> */
+    public static function passThroughLangsProvider(): array
+    {
+        $cases = array_filter(Lang::cases(), static fn (Lang $lang): bool => $lang !== Lang::EE);
+
+        return array_map(static fn (Lang $lang): array => [$lang], array_values($cases));
     }
 }
