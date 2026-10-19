@@ -24,7 +24,7 @@ final class LangTest extends TestCase
     {
         return [
             'PL' => [Site::PL, [Lang::PL]],
-            'EE' => [Site::EE, [Lang::ET, Lang::RU]],
+            'EE' => [Site::EE, [Lang::EE, Lang::RU]],
             'LT' => [Site::LT, [Lang::LT]],
             'LV' => [Site::LV, [Lang::LV, Lang::RU]],
             'FI' => [Site::FI, [Lang::FI]],
@@ -36,6 +36,12 @@ final class LangTest extends TestCase
         $values = Lang::values();
         sort($values);
 
-        $this->assertSame(['et', 'fi', 'lt', 'lv', 'pl', 'ru'], $values);
+        $this->assertSame(['ee', 'fi', 'lt', 'lv', 'pl', 'ru'], $values);
+    }
+
+    public function test_iso_code_is_et_for_estonian(): void
+    {
+        $this->assertSame('et', Lang::EE->isoCode());
+        $this->assertSame('pl', Lang::PL->isoCode());
     }
 }
