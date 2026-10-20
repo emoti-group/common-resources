@@ -10,12 +10,21 @@ enum Lang: string
 {
     use ArrayableEnumTrait;
 
-    case ET = 'et';
+    case EE = 'ee';
     case FI = 'fi';
     case LT = 'lt';
     case LV = 'lv';
     case PL = 'pl';
     case RU = 'ru';
+
+    // Internal code is ee; external services get the ISO 639-1 code.
+    public function isoCode(): string
+    {
+        return match ($this) {
+            self::EE => 'et',
+            default => $this->value,
+        };
+    }
 
     /**
      * @return non-empty-list<Lang>
@@ -27,7 +36,7 @@ enum Lang: string
                 self::PL,
             ],
             Site::EE => [
-                self::ET,
+                self::EE,
                 self::RU,
             ],
             Site::LT => [
