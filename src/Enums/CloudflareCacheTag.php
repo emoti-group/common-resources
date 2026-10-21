@@ -14,6 +14,7 @@ enum CloudflareCacheTag: string
     case MARKETING_CATEGORY_ID = 'mcat';
     case LOCATION_ID = 'loc';
     case SUPPLIER_ID = 'sup';
+    case HOME_PAGE = 'hp';
 
     public function build(Site $site, string|int|null $value = null): string
     {

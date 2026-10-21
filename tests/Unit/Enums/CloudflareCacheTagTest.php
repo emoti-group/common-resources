@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Enums;
 
 use Emoti\CommonResources\Enums\CloudflareCacheTag;
+use Emoti\CommonResources\Enums\HomePageType;
 use Emoti\CommonResources\Enums\Site;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +20,11 @@ final class CloudflareCacheTagTest extends TestCase
     public function test_build_tagged_cache_key_with_value(): void
     {
         $this->assertSame('pl_pro:42', CloudflareCacheTag::PRODUCT_ID->build(Site::PL, 42));
+    }
+
+    public function test_build_home_page_tag_uses_the_page_type(): void
+    {
+        $this->assertSame('pl_hp:home', CloudflareCacheTag::HOME_PAGE->build(Site::PL, HomePageType::Home->value));
     }
 
     public function test_build_without_value_throws_for_non_site_types(): void
