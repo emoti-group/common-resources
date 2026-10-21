@@ -52,4 +52,15 @@ enum Site: string
             default => throw new InvalidArgumentException("Unknown project name: $name"),
         };
     }
+
+    public function toShortNameUnderscoreCode(): string
+    {
+        return match ($this) {
+            self::PL => 'wp_pl',
+            self::LT => 'ld_lt',
+            self::LV => 'ds_lv',
+            self::EE => 'kg_ee',
+            self::FI => 'el_fi',
+        };
+    }
 }

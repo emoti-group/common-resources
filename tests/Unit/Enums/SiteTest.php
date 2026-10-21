@@ -62,6 +62,19 @@ final class SiteTest extends TestCase
         ];
     }
 
+    #[DataProvider('shortNameUnderscoreCodeProvider')]
+    public function test_to_short_name_underscore_code_maps_all_cases(string $expected, Site $site): void
+    {
+        $this->assertSame($expected, $site->toShortNameUnderscoreCode());
+    }
+
+    public function test_to_short_name_underscore_code_round_trips_every_site(): void
+    {
+        foreach (Site::cases() as $site) {
+            $this->assertSame($site, Site::fromShortNameUnderscoreCode($site->toShortNameUnderscoreCode()));
+        }
+    }
+
     public function test_unknown_code_throws_invalid_argument_exception(): void
     {
         $this->expectException(InvalidArgumentException::class);
