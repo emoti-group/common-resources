@@ -24,7 +24,7 @@ src/
 │   └── Client/          # RabbitMQ connection setup
 ├── Enums/               # Type-safe constants (Lang, Site, ProductStatus, PromotionType, FeatureFlag, …)
 ├── DTO/                 # Data Transfer Objects (GeoJsonGeometryDTO, …)
-├── Http/                # ServiceHttpClient for gifts-cms ↔ gifts-api calls, service key header names
+├── Http/                # ServiceHttpClient for calls between services (gifts-cms, gifts-api, agcore), service key header names
 ├── Services/            # GeoJsonLineHelper, LocationsHelper, PdfService/
 │   └── Monitoring/      # ErrorReporter + MetricsReporter abstractions over Sentry, QueueJobMetrics schema
 ├── Traits/              # SingletonTrait, ArrayableEnumTrait
