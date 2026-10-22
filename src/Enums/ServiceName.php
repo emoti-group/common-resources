@@ -10,6 +10,7 @@ enum ServiceName: string
 {
     use ArrayableEnumTrait;
 
+    case Agcore = 'agcore';
     case GiftsApi = 'gifts-api';
     case GiftsCms = 'gifts-cms';
 }
