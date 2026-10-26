@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Emoti\CommonResources\DTO;
+namespace Emoti\CommonResources\HomePage\HomeData;
 
 use InvalidArgumentException;
 
-final class HomeDataMarketingCategory
+final class MarketingCategory
 {
     /**
      * @param string $url The path of the category listing, with the language prefix (e.g. /ru/podarki/).

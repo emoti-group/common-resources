@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Emoti\CommonResources\DTO;
+namespace Emoti\CommonResources\HomePage\Sections;
 
 use InvalidArgumentException;
 
-final class HomePageProductCarousel
+final class ProductCarousel
 {
     public const MIN_PRODUCT_COUNT = 1;
     public const MAX_PRODUCT_COUNT = 30;
@@ -50,7 +50,13 @@ final class HomePageProductCarousel
             throw new InvalidArgumentException('The carousel highlighted flag must be a boolean.');
         }
 
-        return new self($categoryId, $productCount, $gaListName, $highlighted, self::labels($data['labels'] ?? null));
+        return new self(
+            $categoryId,
+            $productCount,
+            $gaListName,
+            $highlighted,
+            SectionFields::labels($data['labels'] ?? null, 'carousel'),
+        );
     }
 
     /**
@@ -71,24 +77,5 @@ final class HomePageProductCarousel
             'highlighted' => $this->highlighted,
             'labels' => $this->labels,
         ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private static function labels(mixed $labels): array
-    {
-        if (!is_array($labels)) {
-            throw new InvalidArgumentException('The carousel labels must be an object.');
-        }
-
-        foreach ($labels as $name => $key) {
-            if (!is_string($name) || !is_string($key) || $key === '') {
-                throw new InvalidArgumentException('Every carousel label must map a name to a non-empty Tolgee key.');
-            }
-        }
-
-        /** @var array<string, string> $labels */
-        return $labels;
     }
 }
