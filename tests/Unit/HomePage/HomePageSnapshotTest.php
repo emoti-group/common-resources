@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\DTO;
+namespace Tests\Unit\HomePage;
 
 use DateTimeImmutable;
-use Emoti\CommonResources\DTO\HomePageSnapshot;
-use Emoti\CommonResources\Enums\HomePageType;
+use Emoti\CommonResources\HomePage\HomePageSnapshot;
+use Emoti\CommonResources\HomePage\HomePageType;
 use Emoti\CommonResources\Enums\Lang;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;

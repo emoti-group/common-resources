@@ -23,7 +23,10 @@ src/
 │   ├── Listeners/       # QueueJobMetricsSubscriber (Laravel queue events → queue job metrics)
 │   └── Client/          # RabbitMQ connection setup
 ├── Enums/               # Type-safe constants (Lang, Site, ProductStatus, PromotionType, FeatureFlag, …)
-├── DTO/                 # Data Transfer Objects (GeoJsonGeometryDTO, …)
+├── DTO/                 # Data Transfer Objects (GeoJsonGeometryDTO, CreateOrderResult)
+├── HomePage/            # Home page contract: HomePageType, HomePageSectionType, HomePageSnapshot
+│   ├── HomeData/        # agcore home data (HomeData, MarketingCategory)
+│   └── Sections/        # Section payloads (ProductCarousel, GiftFinder, TrustStrip, …) and TrustStripIcon
 ├── Http/                # ServiceHttpClient for calls between services (gifts-cms, gifts-api, agcore), service key header names
 ├── Services/            # GeoJsonLineHelper, LocationsHelper, PdfService/
 │   └── Monitoring/      # ErrorReporter + MetricsReporter abstractions over Sentry, QueueJobMetrics schema

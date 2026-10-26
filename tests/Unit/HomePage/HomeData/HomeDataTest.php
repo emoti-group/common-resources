@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\DTO;
+namespace Tests\Unit\HomePage\HomeData;
 
-use Emoti\CommonResources\DTO\HomeData;
-use Emoti\CommonResources\DTO\HomeDataMarketingCategory;
+use Emoti\CommonResources\HomePage\HomeData\HomeData;
+use Emoti\CommonResources\HomePage\HomeData\MarketingCategory;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -18,8 +18,8 @@ final class HomeDataTest extends TestCase
 
         $this->assertEquals(
             [
-                new HomeDataMarketingCategory(442, 'TOP 30', '/prezenty-top-30/'),
-                new HomeDataMarketingCategory(398, 'Nowości', '/prezenty-nowosci/'),
+                new MarketingCategory(442, 'TOP 30', '/prezenty-top-30/'),
+                new MarketingCategory(398, 'Nowości', '/prezenty-nowosci/'),
             ],
             $homeData->marketingCategories,
         );

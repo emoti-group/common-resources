@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Emoti\CommonResources\DTO;
+namespace Emoti\CommonResources\HomePage;
 
 use DateTimeImmutable;
 use DateTimeInterface;
-use Emoti\CommonResources\Enums\HomePageType;
 use Emoti\CommonResources\Enums\Lang;
 use Exception;
 use InvalidArgumentException;

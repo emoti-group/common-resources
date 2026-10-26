@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Emoti\CommonResources\Enums;
+namespace Emoti\CommonResources\HomePage;
 
 use Emoti\CommonResources\Traits\ArrayableEnumTrait;
 

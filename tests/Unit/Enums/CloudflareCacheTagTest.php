@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Enums;
 
 use Emoti\CommonResources\Enums\CloudflareCacheTag;
-use Emoti\CommonResources\Enums\HomePageType;
+use Emoti\CommonResources\HomePage\HomePageType;
 use Emoti\CommonResources\Enums\Site;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
