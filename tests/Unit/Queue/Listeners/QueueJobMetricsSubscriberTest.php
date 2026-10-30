@@ -78,7 +78,7 @@ final class QueueJobMetricsSubscriberTest extends TestCase
     {
         // SyncQueue::handleException fires JobExceptionOccurred BEFORE fail() marks the job failed.
         $failed = false;
-        $job = $this->createMock(Job::class);
+        $job = $this->createStub(Job::class);
         $job->method('resolveQueuedJobClass')->willReturn('App\Jobs\SyncJob');
         $job->method('getQueue')->willReturn('sync');
         $job->method('attempts')->willReturn(1);
@@ -250,7 +250,7 @@ final class QueueJobMetricsSubscriberTest extends TestCase
         bool $isReleased = false,
         ?string $uuid = null,
     ): Job {
-        return $this->createConfiguredMock(Job::class, [
+        return $this->createConfiguredStub(Job::class, [
             'resolveQueuedJobClass' => $name,
             // displayName() may carry ids or free text; the subscriber must not use it.
             'resolveName' => 'Display name with id 12345',

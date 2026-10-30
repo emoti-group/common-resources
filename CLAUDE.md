@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. **Shared PHP library** — Events, enums, DTOs, services, and traits consumed by multiple Laravel and no-framework PHP microservices via Composer symlink.
 2. **Shared Docker infrastructure** — A central `docker-compose.yml` that runs RabbitMQ, Elasticsearch, and Traefik on a shared Docker network (`common-resources-network`) for local development.
 
-**PHP:** ^8.1 | **Key deps:** `php-amqplib`, `spatie/laravel-data`, `ramsey/uuid`
+**PHP:** ^8.3 | **Key deps:** `php-amqplib`, `spatie/laravel-data`, `ramsey/uuid`
 
 ## Source Structure
 

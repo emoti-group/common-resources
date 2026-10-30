@@ -55,7 +55,6 @@ final class SingletonTraitTest extends TestCase
         // Use reflection to directly invoke __clone() to test it throws LogicException.
         $ref = new \ReflectionClass($instance);
         $method = $ref->getMethod('__clone');
-        $method->setAccessible(true);
         $method->invoke($instance);
     }
 
