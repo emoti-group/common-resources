@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. **Shared PHP library** — Events, enums, DTOs, services, and traits consumed by multiple Laravel and no-framework PHP microservices via Composer symlink.
 2. **Shared Docker infrastructure** — A central `docker-compose.yml` that runs RabbitMQ, Elasticsearch, and Traefik on a shared Docker network (`common-resources-network`) for local development.
 
-**PHP:** ^8.3 | **Key deps:** `php-amqplib`, `spatie/laravel-data`, `ramsey/uuid`
+**PHP:** ^8.3 (new code must run on 8.3: no 8.4-only APIs without a `PHP_VERSION_ID` guard) | **Key deps:** `php-amqplib`, `spatie/laravel-data`, `ramsey/uuid`, `aws/aws-sdk-php`
 
 ## Source Structure
 
@@ -27,6 +27,7 @@ src/
 ├── HomePage/            # Home page contract: HomePageType, HomePageSectionType, HomePageSnapshot
 │   ├── HomeData/        # agcore home data (HomeData, MarketingCategory)
 │   └── Sections/        # Section payloads (ProductCarousel, GiftFinder, TrustStrip, …) and TrustStripIcon
+├── Database/            # RDS IAM auth: RdsIamMySqlConnector (apps bind it themselves), token provider — see docs/rds-iam-auth.md
 ├── Http/                # ServiceHttpClient for calls between services (gifts-cms, gifts-api, agcore), service key header names
 ├── Services/            # GeoJsonLineHelper, LocationsHelper, PdfService/
 │   └── Monitoring/      # ErrorReporter + MetricsReporter abstractions over Sentry, QueueJobMetrics schema
