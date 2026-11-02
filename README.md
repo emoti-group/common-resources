@@ -10,6 +10,8 @@ different projects on the same Docker network.
   local projects to communicate
   with each other.
 - **[Message broker](docs/message-broker.md)**: Events that you can send and consumer to handle them.
+- **[RDS IAM database authentication](docs/rds-iam-auth.md)**: Log in to Aurora MySQL with IAM tokens
+  signed by the EC2 instance role instead of a static password.
 - **Shared Services**: Preconfigured services that can be reused across projects.
 
 ## Included Services
