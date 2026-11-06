@@ -6,16 +6,28 @@ namespace Emoti\CommonResources\Services\PdfService;
 
 use Exception;
 use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Emoti\CommonResources\Services\BinaryFile;
 
 final class PdfServiceClient implements PdfServiceInterface
 {
-    private Client $httpClient;
+    private const API_KEY_HEADER = 'X-API-Key';
 
-    public function __construct(string $pdfServiceUrl)
-    {
-        $this->httpClient = new Client(['base_uri' => $pdfServiceUrl]);
+    private ClientInterface $httpClient;
+
+    private ?string $apiKey;
+
+    /**
+     * @param string|null $apiKey Sent as X-API-Key; pdf-service checks it only when its API_KEY env is set.
+     */
+    public function __construct(
+        string $pdfServiceUrl,
+        ?string $apiKey = null,
+        ?ClientInterface $httpClient = null,
+    ) {
+        $this->httpClient = $httpClient ?? new Client(['base_uri' => $pdfServiceUrl]);
+        $this->apiKey = $apiKey !== null && trim($apiKey) !== '' ? trim($apiKey) : null;
     }
 
     /**
@@ -43,9 +55,10 @@ final class PdfServiceClient implements PdfServiceInterface
             }
             $query = http_build_query($queryParams);
 
-            $result = $this->httpClient->post(
+            $result = $this->httpClient->request(
+                'POST',
                 sprintf('/%s?%s', 'generate-pdf', $query),
-                ['json' => ['body' => base64_encode($html)]],
+                $this->requestOptions(['json' => ['body' => base64_encode($html)]]),
             );
 
             return BinaryFile::fromBase64($result->getBody()->getContents());
@@ -67,14 +80,28 @@ final class PdfServiceClient implements PdfServiceInterface
                 ),
             ];
 
-            $result = $this->httpClient->post(
+            $result = $this->httpClient->request(
+                'POST',
                 sprintf('/%s', 'merge-pdf'),
-                ['json' => $data],
+                $this->requestOptions(['json' => $data]),
             );
 
             return BinaryFile::fromBase64($result->getBody()->getContents());
         } catch (GuzzleException $e) {
             throw new Exception('Failed to merge PDF files: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     * @return array<string, mixed>
+     */
+    private function requestOptions(array $options): array
+    {
+        if ($this->apiKey === null) {
+            return $options;
+        }
+
+        return [...$options, 'headers' => [self::API_KEY_HEADER => $this->apiKey]];
     }
 }
